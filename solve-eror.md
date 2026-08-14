@@ -94,3 +94,11 @@ Dokumen ini berisi daftar inventarisasi error umum, *exception*, *bug*, serta la
 * **Gejala**: `Exception: syntax error, unexpected 'return' (T_RETURN), expecting function (T_FUNCTION) or const (T_CONST) in application/helpers/db_helper.php on line 304`.
 * **Penyebab**: Adanya sintaks duplikat `return $result; }` di luar blok fungsi `DB::raw()`.
 * **Solusi**: Pulihkan file `db_helper.php` via `git checkout application/helpers/db_helper.php`.
+
+---
+
+## 13. Redirect Otomatis ke Dashboard / eror 300 Saat Mengakses Route / Modal / AJAX
+* **Gejala**: Tampilan browser atau modal tiba-tiba ter-redirect ke URL `app/dashboard?n=...` saat mengeksekusi request atau mengklik link/modal.
+* **Penyebab**: Lupa mengikutsertakan parameter navigasi `?n=` pada pembentukan URL request (AJAX, form submit, modal trigger, atau PDF print). `MY_Controller.php` gagal memverifikasi `nav_id` (`$this->nav == null`).
+* **Solusi**: Pastikan URL request selalu menambahkan `?n=<?= _get('n') ?>` atau `?n=' . $this->nav_id`.
+

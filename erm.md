@@ -173,7 +173,7 @@ public function form_monitoring_gerak_modal($pelayanan_id = null, $registrasi_id
     $d['registrasi_id'] = @$registrasi_id;
     $d['pelayanan']     = $this->m_pelayanan->get_pelayanan($pelayanan_id);
     $d['main']          = $this->m_pelayanan->get_monitoring_gerak($monitoringgerak_id);
-    $d['form_act']      = site_url($this->template) . 'save_monitoring_gerak/' . $registrasi_id;
+    $d['form_act']      = site_url($this->template) . 'save_monitoring_gerak/' . $registrasi_id . '?n=' . _get('n');
 
     $this->render($this->template . 'asesmen/form_monitoring_gerak_modal', $d);
 }
