@@ -1,49 +1,96 @@
-# Dokumentasi Resmi SIMRS RSUD Soedomo
+# Dokumen Utama Standar SIMRS RSUD Soedomo
 
-Selamat datang di repositori dokumentasi teknis, standar pengkodean (*coding standards*), kaidah basis data, dan cetak biru (*blueprint*) E-Rekam Medis (ERM) untuk **SIMRS RSUD Soedomo**.
-
----
-
-## 📚 Modul & Panduan Utama
-
-Silakan pilih dokumen panduan di bawah ini sesuai dengan kebutuhan pengembangan Anda:
-
-### 1. 🗄️ Basis Data & Helper (`DB`)
-- **[Kaidah & Standar Pembuatan Database RSUD Soedomo](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-style.md)** 
-  *Aturan penamaan tabel (`dat_`, `mst_`, `log_`), struktur 8 kolom audit log mandatory, generator Primary Key anti-deadlock dengan PostgreSQL Advisory Lock (`pg_advisory_xact_lock`), enkripsi kolom data sensitif, dan kebijakan Soft Delete.*
-- **[Referensi Lengkap Fungsi DB Helper (`db_helper.php`)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-helper.md)**  
-  *Dokumentasi lengkap seluruh method statis pada class `DB` (query builder, raw query, mutasi data, DataTables server-side, ID generator, enkripsi, dan transaksi database).*
+Selamat datang di repositori dokumentasi resmi pengembangan **SIMRS RSUD Soedomo**. Dokumentasi ini dirancang sebagai acuan mutlak bagi pengembang dan agen kecerdasan buatan (AI) untuk menghasilkan sistem E-Rekam Medis (ERM) yang 100% konsisten, presisi, dan aman.
 
 ---
 
-### 2. 📋 E-Rekam Medis (ERM)
-- **[Blueprint & Standardisasi Fitur E-Rekam Medis (ERM)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)**  
-  *Arsitektur 3 jalur akses PPA (Offcanvas Right, Global Navbar Search, dan In-Page Nav Tab), struktur pendaftaran di `mst_erekam_medis`, pencatatan audit di `log_erekam_medis` (`log_erm()`), query PostgreSQL `SIMILAR TO`, dan code complete template (Controller, Model, View).*
+## 🗺️ KAMUS TAHAPAN EKSEKUSI ERM (ALUR MANDATORI STEP-BY-STEP)
+
+Untuk memastikan konsistensi mutlak 100%, setiap pembuatan atau refactoring modul ERM **WAJIB MENGIKUTI URUTAN TAHAPAN EKSEKUSI BERIKUT**:
+
+```
++-----------------------------------------------------------------------------------+
+| TAHAP 1: DATABASE SCHEMA & AUDIT LOGS                                             |
+| [ database-style.md & database-helper.md ]                                        |
+| 1. DDL Tabel PostgreSQL (dat_... / mst_...) + 8 Kolom Audit Log Mandatori.        |
+| 2. Kolom TTD Non-Pegawai (jika ada): [nama]_nm VARCHAR(150), [nama]_ttd TEXT.     |
+| 3. Concurrency-safe ID: DB::get_id($table) -> DB::insert() -> DB::update_id().    |
+| 4. DML Registrasi Menu ERM ke mst_erekam_medis.                                   |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| TAHAP 2: MODEL & DATATABLES SERVER-SIDE                                           |
+| [ database-helper.md & erm.md ]                                                   |
+| 1. Method DataTables Server-Side: DB::datatables_query('SELECT * FROM (...) a').  |
+| 2. Method get_modul() & save_modul().                                             |
+| 3. MANDATORI LOG ERM: Wajib memanggil log_erm(...) agar menu ERM berubah hijau.  |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| TAHAP 3: CONTROLLER HMVC                                                          |
+| [ erm.md & list-cetak.md ]                                                        |
+| 1. Route List Modal Level 1: list_..._modal($pelayanan_id)                        |
+| 2. Route Form Modal Level 2: form_..._modal($pelayanan_id, $id)                   |
+| 3. Route AJAX Submit & Route Cetak PDF (dengan ini_set("memory_limit", "-1")).    |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| TAHAP 4: UI MODAL LEVEL 1 - LIST HISTORY DATA                                     |
+| [ modal-style.md ]                                                                |
+| BENCHMARK MUTLAK: list_pengkajian_geriatri_rajal_modal.php                        |
+| 1. Isolasi line 1: <?php include '_js_list_..._modal.php' ?>                      |
+| 2. Tombol "+ Tambah Data" -> _modal(event, {uri: '.../form_...'}, 2)              |
+| 3. Tombol "Cetak" -> _modalPrint(event, {uri: '.../cetak_...'}, 5)                |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| TAHAP 5: UI MODAL LEVEL 2 - FORM INPUT                                            |
+| [ modal-style.md ]                                                                |
+| BENCHMARK MUTLAK: form_pengkajian_geriatri_rajal_modal.php                        |
+| 1. Isolasi line 1: <?php include '_js_form_..._modal.php' ?>                      |
+| 2. DILARANG wrapper <div class="modal"> & <div class="card">, DILARANG bg-color.  |
+| 3. Footer Action Buttons: Simpan (btn-primary) & Batal (btn-default).             |
+| 4. Single-Entry TTD Pihak Non-Pegawai: _modalTtd(callback, 'nama', label, name)  |
+|    dengan triple fallback (this.result -> canvas_0.toDataURL() -> #canvas_image_0)|
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| TAHAP 6: LEMBAR CETAK PDF DOMPDF                                                  |
+| [ list-cetak.md ]                                                                 |
+| BENCHMARK MUTLAK: cetak_pengkajian_geriatri_rajal.php                             |
+| 1. Kop Surat 3-Kolom Murni (Box Profil & Box Registrasi height: 105px simetris).  |
+| 2. Title Dokumen di bawah Kop Surat, Digit Box / metadata khusus di body.         |
+| 3. CSS Style: font 9.5px, .page-wrapper (border: 1.5px solid #000).               |
+| 4. Centang DejaVu Sans (&#9745; / &#9744;), TTD Rendering via format_ttd_src().   |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| TAHAP 7: VERIFIKASI & HANDLING ERROR                                              |
+| [ solve-eror.md ]                                                                 |
+| 1. Uji AJAX Save, DataTables Redraw, & Status Indikator Hijau ERM.                |
+| 2. Konsultasi 12 Poin Solusi Error di solve-eror.md jika terjadi kendala.         |
++-----------------------------------------------------------------------------------+
+```
 
 ---
 
-### 3. 🖼️ User Interface & Modal Form
-- **[Kaidah Pembuatan UI Modal Form (`itm.js`)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)**  
-  *Panduan arsitektur multi-level modal stacking (Level 1 List Modal vs Level 2 Form Input Modal), ukuran modal Bootstrap (`modal-sm` s/d `modal-full-width`), fungsi peluncur JS (`_modal`, `_modalNoEvent`, `_modalHide`), aturan penulisan view murni, serta alur AJAX submit & DataTables redraw.*
+## 📚 Daftar Berkas Dokumentasi
 
----
-
-### 4. 🖨️ Pencetakan Dokumen & PDF
-- **[Kaidah Modal Print & Cetak PDF](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)**  
-  *Standardisasi preview pencetakan berbasis modal (`_modalPrint`, `_modalPrintTTE`), jembatan controller `Printpage.php`, pembuatan PDF via library `PdfDom` (Dompdf), alokasi memori `ini_set("memory_limit", "-1")`, Kop Surat identitas RS, serta template HTML print.*
-
----
-
-### 5. 🛠️ Solusi & Troubleshooting
-- **[Panduan Penanganan & Pencegahan Error (`solve-eror.md`)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)**  
-  *Langkah mudah mengatasi dan mencegah error umum di SIMRS RSUD Soedomo (DataTables AJAX parsing error, PostgreSQL advisory lock collision, indikator ERM tidak hijau, modal backdrop glitch, dan memory limit PDF).*
-
----
-
-## 🚀 Ringkasan Tech Stack SIMRS RSUD Soedomo
-
-- **Backend Framework**: CodeIgniter 3 (CI3) + HMVC Modules
-- **Database Engine**: PostgreSQL 12+ (Driver: `postgre`)
-- **Frontend UI Framework**: Bootstrap 5 / Tabler UI + jQuery
-- **Client Script Helper**: `dist/js/itm.js` & `application/helpers/itm_helper.php`
-- **PDF Engine**: Dompdf Wrapper (`application/libraries/PdfDom.php`)
+1. **[Kaidah Pembuatan Database](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-style.md)** (`database-style.md`)
+   - Standar DDL, penamaan tabel, 8 kolom audit log mandatori, dan DML registrasi menu ERM.
+2. **[Referensi Fungsi DB Helper](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-helper.md)** (`database-helper.md`)
+   - `DB::get_id($table)` dengan PostgreSQL Transaction Advisory Lock, `DB::insert()`, `DB::update()`, dan subquery DataTables.
+3. **[Blueprint E-Rekam Medis (ERM)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)** (`erm.md`)
+   - Pintu akses ERM, integrasi `log_erm()` untuk warna status indikator hijau tebal.
+4. **[Kaidah UI Modal Form](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)** (`modal-style.md`)
+   - Soliter acuan paten `form_pengkajian_geriatri_rajal_modal.php`, aturan multi-level modal (`_modal`), dan efisiensi TTD `_modalTtd`.
+5. **[Kaidah Modal Print & PDF Cetak](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)** (`list-cetak.md`)
+   - Soliter acuan paten `cetak_pengkajian_geriatri_rajal.php`, Kop Surat 3-Kolom Murni & Simetris (`height: 105px;`), dan styling Dompdf.
+6. **[Panduan Solusi & Penanganan Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)** (`solve-eror.md`)
+   - Inventarisasi 12 poin solusi penanganan error sistem.
