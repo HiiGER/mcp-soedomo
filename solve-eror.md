@@ -164,3 +164,95 @@ SELECT * FROM mst_erekam_medis WHERE lokasi_map REGEXP 'POLI|IGD';
 -- BENAR (Syntax PostgreSQL RSUD Soedomo)
 SELECT * FROM mst_erekam_medis WHERE lokasi_map SIMILAR TO '%(POLI|IGD|BANGSAL)%';
 ```
+
+---
+
+## 7. DataTables AJAX Error: "Invalid JSON response" akibat Router Controller Belum Didaftarkan
+
+### Gejala (*Symptom*)
+Saat membuka Modal Level 1 (List Data History ERM), muncul pop-up warning DataTables:
+`DataTables warning: table id=datatable-...-main - Invalid JSON response. For more information about this error, please see http://datatables.net/tn/1`
+
+### Penyebab Utama
+View DataTables di-inisialisasi ke endpoint URL `ajax_datatables/modul_name`, namun pada method central router `Pelayanan::ajax_datatables($type)` di `Pelayanan.php` belum didaftarkan pengkondisian `if ($type == 'modul_name')`.
+Akibatnya, controller mengembalikan respon berupa string kosong (`""`) bukan JSON valid, sehingga parser JSON DataTables mengalami error.
+
+### Solusi & Code Correcting
+1. **Daftarkan Rute `$type` di `Pelayanan.php`**:
+   Wajib daftarkan rute modul baru pada method `ajax_datatables()` di [Pelayanan.php](file:///home/geri/ITM/SOEDOMO/simrs/application/modules/pelayanan/controllers/Pelayanan.php):
+
+   ```php
+   public function ajax_datatables($type = null, $params = null)
+   {
+       // ...
+       if ($type == 'pengkajian_geriatri_rajal') {
+           $this->m_pelayanan->load_datatables_pengkajian_geriatri_rajal();
+       }
+       // ...
+   }
+   ```
+
+2. **Standardisasi Model `load_datatables`**:
+   Pastikan method `load_datatables_...()` di `M_pelayanan.php` memanggil `DB::datatables_query()` tanpa callback array jika JS DataTables menggunakan pemetaan kolom `"columns": [ { "data": "column_name" } ]`:
+
+   ```php
+   public function load_datatables_pengkajian_geriatri_rajal()
+   {
+       $query = "SELECT * FROM (
+           SELECT 
+               a.*,
+               b.pegawai_nm AS dokter_nm,
+               c.pegawai_nm AS perawat_nm
+           FROM dat_pengkajian_geriatri_rajal a
+           LEFT JOIN mst_pegawai b ON a.dokter_id = b.pegawai_id
+           LEFT JOIN mst_pegawai c ON a.perawat_id = c.pegawai_id
+           WHERE a.registrasi_id = '" . @$this->input->post('registrasi_id') . "'
+             AND a.deleted_st = '0'
+       ) a";
+       $search   = null;
+       $where    = null;
+       $is_where = null;
+       DB::datatables_query($query, $search, $where, $is_where);
+   }
+   ```
+
+---
+
+## 8. PostgreSQL Datetime Out of Range Error (`date/time field value out of range`)
+
+### Gejala (*Symptom*)
+Saat menyimpan form transaksi/ERM baru, transaksi gagal dan log sistem mencatat query error:
+`ERROR: date/time field value out of range: "14-08-2026 10:18:29"`
+
+### Penyebab Utama
+Nilai tanggal yang dikirimkan dari form UI (datetimepicker) berada dalam format tanggal Indonesia `DD-MM-YYYY HH:MI:SS` (contoh: `"14-08-2026 10:18:29"`). Kolom PostgreSQL bertipe `TIMESTAMP` membaca angka awal (`14`) sebagai posisi bulan (range 1-12), sehingga melemparkan exception `date/time field value out of range`.
+
+### Solusi & Code Correcting
+Sebelum memanggil helper `DB::insert()` atau `DB::update()`, **WAJIB** mengonversi seluruh field bertipe tanggal/jam pada array data `$d` menggunakan helper `to_date($date, '', 'full_date')` agar terformat menjadi `YYYY-MM-DD HH:MI:SS` yang dikenali oleh PostgreSQL:
+
+```php
+public function save_pengkajian_geriatri_rajal($registrasi_id = null)
+{
+    $d = _post();
+    $erekammedis_id = @$d['erekammedis_id'];
+    unset($d['erekammedis_id']);
+
+    // WAJIB: Konversi tanggal UI (DD-MM-YYYY HH:MI:SS) ke format PostgreSQL TIMESTAMP (YYYY-MM-DD HH:MI:SS)
+    if (!empty($d['tgl_pengkajian'])) {
+        $d['tgl_pengkajian'] = to_date($d['tgl_pengkajian'], '', 'full_date');
+    }
+    if (!empty($d['perawat_tgl_jam'])) {
+        $d['perawat_tgl_jam'] = to_date($d['perawat_tgl_jam'], '', 'full_date');
+    }
+    if (!empty($d['dokter_tgl_jam'])) {
+        $d['dokter_tgl_jam'] = to_date($d['dokter_tgl_jam'], '', 'full_date');
+    }
+
+    if (empty($d['pengkajiangeriatri_id'])) {
+        $d['pengkajiangeriatri_id'] = DB::get_id('dat_pengkajian_geriatri_rajal');
+        $res = DB::insert('dat_pengkajian_geriatri_rajal', $d);
+        DB::update_id('dat_pengkajian_geriatri_rajal', $d['pengkajiangeriatri_id']);
+        // ...
+    }
+}
+```

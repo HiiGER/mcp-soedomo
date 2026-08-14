@@ -128,30 +128,23 @@ Menutup modal berdasarkan tingkatan index `idx`.
 
 ## 5. Template Lengkap View & Script Modal
 
-### 5.1 View List Modal Level 1 (`list_tih_modal.php`)
+### 5.1 View List Modal Level 1 (`list_modul_modal.php`)
 
 ```html
-<?php include '_js_list_tih_modal.php'; ?>
+<?php include '_js_list_modul_modal.php' ?>
 
 <div class="mb-2">
-  <a href="javascript:void(0)"
-     onclick="_modal(event, {uri: '<?= $this->uri_pelayanan . '/form_tih_modal/' . @$pelayanan_id . '/' . @$registrasi_id ?>', size: 'modal-xl', position: 'normal', title: 'TAMBAH TRANSFER INTRA HOSPITAL'}, 2)"
-     class="btn btn-primary btn-sm">
-    <?= _icon('add') ?> Tambah TIH Baru
-  </a>
+  <a href="javascript:void(0)" onclick="_modal(event, {uri: '<?= $this->uri_pelayanan . '/form_modul_modal/' . @$pelayanan_id . '/' . @$registrasi_id ?>', size: 'modal-xl', position: 'normal', title: 'Form Fitur Baru'}, 2)" class="btn btn-primary"><i class="fas fa-plus-circle me-1"></i> Tambah Data</a>
 </div>
-
 <div class="table-responsive">
-  <table class="table table-vcenter card-table table-striped table-sm display nowrap" id="datatable-tih-main" style="width:100%">
+  <table class="table table-vcenter card-table table-striped table-sm display nowrap" id="datatable-modul-main">
     <thead>
       <tr>
         <th width="5%">No</th>
-        <th width="10%">Aksi</th>
-        <th width="15%">Tgl. Transfer</th>
-        <th>Ruang Asal</th>
-        <th>Ruang Tujuan</th>
-        <th>Dokter Pengirim</th>
-        <th width="10%">Cetak</th>
+        <th width="7%">Aksi</th>
+        <th width="10%">Tgl</th>
+        <th>Nama Pembuat / Detail</th>
+        <th width="5%">Cetak</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -161,38 +154,110 @@ Menutup modal berdasarkan tingkatan index `idx`.
 
 ---
 
-### 5.2 Script JS List Modal (`_js_list_tih_modal.php`)
+### 5.2 Script JS List Modal (`_js_list_modul_modal.php`)
 
 ```html
-<script>
-  var tabel_tih;
+<script type="text/javascript">
+  var tabel = null;
   $(document).ready(function() {
-    tabel_tih = $('#datatable-tih-main').DataTable({
+    tabel = $('#datatable-modul-main').DataTable({
+      "language": {
+        url: '<?= base_url() ?>dist/libs/DataTables/id.json',
+      },
+      "autoWidth": false,
       "processing": true,
+      "responsive": true,
       "serverSide": true,
-      "order": [],
+      "ordering": true,
+      "order": [
+        [0, 'asc']
+      ],
       "ajax": {
-        "url": "<?= site_url($this->template . 'ajax_datatables/tih') ?>",
+        "url": "<?= $this->uri_pelayanan . '/ajax_datatables/modul_name?n=' . _get('n') ?>",
         "type": "POST",
-        "data": function(d) {
-          d.registrasi_id = '<?= @$registrasi_id ?>';
-          d._token = _token;
+        "data": {
+          "pelayanan_id": "<?= @$pelayanan_id ?>",
+          "registrasi_id": "<?= @$registrasi_id ?>",
         }
       },
-      "columnDefs": [
-        { "targets": [0, 1, 6], "orderable": false }
-      ]
+      "deferRender": true,
+      "aLengthMenu": _datatableLengthMenu,
+      "columns": [{
+          "data": "modul_id",
+          "sortable": false,
+          "render": function(data, type, row, meta) {
+            return meta.row + meta.settings._iDisplayStart + 1;
+          }
+        },
+        {
+          "data": "modul_id",
+          "className": "text-left",
+          "render": function(data, type, row, meta) {
+            var uri_edit = '<?= $this->uri_pelayanan . '/form_modul_modal/' . @$pelayanan_id . '/' . @$registrasi_id . '/' ?>' + data;
+            var registrasi_id = ifNull(row.registrasi_id);
+            return '' +
+              '<div class="btn-list btn-sm flex-nowrap">' +
+              '  <div class="dropdown"> ' +
+              '     <button class="btn btn-outline-primary btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">' +
+              '          Aksi' +
+              '     </button>' +
+              '     <div class="dropdown-menu">' +
+              '      <a class="dropdown-item p-1" href="javascript:void(0)" onclick="_modal(event, {uri: \'' + uri_edit + '\', size: \'modal-xl\', position: \'normal\', title: \'Ubah\'}, 2)">' +
+              '          <?= _icon('edit') ?> Ubah' +
+              '      </a>' +
+              '      <a class="dropdown-item p-1" href="javascript:void(0)" onclick=_delete_modul("' + data + '","' + registrasi_id + '")>' +
+              '          <?= _icon('trash') ?> Hapus' +
+              '      </a>' +
+              '   </div>' +
+              ' </div>' +
+              '</div>';
+          }
+        },
+        {
+          "data": "created_at",
+          "className": "text-left",
+          "render": function(data, type, row, meta) {
+            return toDate(data, '', 'full_date');
+          }
+        },
+        {
+          "data": "pembuat_nm",
+          "className": "text-left",
+        },
+        {
+          "data": "modul_id",
+          "className": "text-left",
+          "render": function(data, type, row, meta) {
+            var uri_print = '<?= $this->uri_pelayanan . '/cetak_modul/' ?>';
+            return '<a href="javascript:void(0)" onclick="_modalPrint(event, {uri: \'' + uri_print + row.pelayanan_id + '/' + data + '\', size: \'modal-xl\', position: \'normal\', title: \'Cetak Dokumen\'}, 5)" class="btn btn-sm btn-primary"><i class="fas fa-print me-1"></i> Cetak</a>';
+          }
+        },
+      ],
     });
   });
 
-  function delete_tih(id) {
-    _confirm('Apakah Anda yakin ingin menghapus data ini?', function() {
-      $.post("<?= site_url($this->template . 'delete_tih/') ?>" + id, { _token: _token }, function(res) {
-        if (res.status == '03') {
-          _alert('Data berhasil dihapus', 'success');
-          tabel_tih.draw();
-        }
-      }, 'json');
+  function _delete_modul(id, registrasi_id = '') {
+    Swal.fire({
+      title: 'Perhatian!',
+      text: 'Apakah Anda yakin ingin menghapus data ini?',
+      icon: 'warning',
+      customClass: "swal-wide",
+      showCancelButton: true,
+      cancelButtonColor: "#858F9B",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#3376B8",
+      confirmButtonText: "Hapus",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.post("<?= site_url($this->template . 'delete_modul/') ?>" + id, { _token: _token }, function(res) {
+          if (res.status == '03') {
+            _alert('Data berhasil dihapus', 'success');
+            if (tabel) tabel.draw();
+          } else {
+            _alert(res.message || 'Gagal menghapus data', 'danger');
+          }
+        }, 'json');
+      }
     });
   }
 </script>
@@ -200,89 +265,169 @@ Menutup modal berdasarkan tingkatan index `idx`.
 
 ---
 
-### 5.3 View Form Modal Level 2 (`form_tih_modal.php`)
+### 5.3 View Form Modal Level 2 (`form_tih_modal.php` - Referensi Paten Standard)
 
 ```html
-<?php include '_js_form_tih_modal.php'; ?>
+<?php include '_js_form_tih_modal.php' ?>
 
-<form id="form-tih-input" action="<?= @$form_act ?>" method="POST">
+<form id="form-tih-modal" action="" method="post" autocomplete="on" enctype="multipart/form-data">
   <input type="hidden" name="tih_id" value="<?= @$main['tih_id'] ?>">
-  <input type="hidden" name="pelayanan_id" value="<?= @$pelayanan_id ?>">
-  <input type="hidden" name="registrasi_id" value="<?= @$registrasi_id ?>">
-  <input type="hidden" name="erekammedis_id" value="01.0001">
+  <input type="hidden" name="pelayanan_id" value="<?= @$pelayanan['pelayanan_id'] ?>">
+  <input type="hidden" name="registrasi_id" value="<?= @$pelayanan['registrasi_id'] ?>">
+  <input type="hidden" name="pasien_id" value="<?= @$pelayanan['pasien_id'] ?>">
+  <input type="hidden" name="lokasi_id" value="<?= @$pelayanan['lokasi_id'] ?>">
+  <input type="hidden" name="erekammedis_id">
 
   <div class="row">
-    <div class="col-md-6 mb-3">
-      <label class="form-label required">Tanggal Transfer</label>
-      <input type="text" name="tgl_transfer" class="form-control form-control-sm flatpickr-datetime" value="<?= @$main['tgl_transfer'] ?>" required>
-    </div>
+    <div class="col-lg-12 col-md-12">
+      <!-- Section Row Header Field -->
+      <div class="row">
+        <div class="col-4">
+          <div class="mb-1">
+            <label class="form-label mb-1">Tgl. Catat</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              <input type="text" class="form-control text-black datetimepicker" name="tih_tgl" value="<?= (@$main['tih_tgl'] != '') ? to_date(@$main['tih_tgl'], '', 'full_date') : date('d-m-Y H:i:s') ?>">
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="mb-1">
+            <label class="form-label mb-1 required">Perawat Yang Menyerahkan</label>
+            <?= _frm_select('perawatygmenyerahkan_id', [], 'perawatygmenyerahkan_id', '', @$main['perawatygmenyerahkan_id'], '- Pilih -', 'class="form-select select2-ajax me-2" data-url="ajax_statement/all_pegawai_select2" required') ?>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="mb-1">
+            <label class="form-label mb-1">Perawat Yang Menerima</label>
+            <?= _frm_select('perawatygmenerima_id', [], 'perawatygmenerima_id', '', @$main['perawatygmenerima_id'], '- Pilih -', 'class="form-select select2-ajax me-2" data-url="ajax_statement/all_pegawai_select2"') ?>
+          </div>
+        </div>
+      </div>
 
-    <div class="col-md-6 mb-3">
-      <label class="form-label required">Dokter DPJP</label>
-      <select name="dokter_id" class="form-select form-select-sm select2-modal" required>
-        <option value="">-- Pilih Dokter --</option>
-        <?php foreach ($all_dokter as $d) : ?>
-          <option value="<?= $d['pegawai_id'] ?>" <?= @$main['dokter_id'] == $d['pegawai_id'] ? 'selected' : '' ?>><?= $d['pegawai_nm'] ?></option>
-        <?php endforeach; ?>
-      </select>
-    </div>
+      <!-- Section Title Standard -->
+      <h5 class="card-title mt-1 mb-1">JUDUL SEKSI FORM</h5>
+      <div class="row">
+        <div class="col-6">
+          <div class="mb-1">
+            <label class="form-label mb-1">Dokter DPJP</label>
+            <?= _frm_select('dokter_id', [], 'dokter_id', '', @$main['dokter_id'], '- Pilih -', 'class="form-select select2-ajax me-2" data-url="ajax_statement/all_pegawai_select2" required') ?>
+          </div>
+          <div class="mb-1">
+            <label class="form-label mb-1">Catatan</label>
+            <textarea class="form-control" rows="3" name="catatan"><?= @$main['catatan'] ?></textarea>
+          </div>
+        </div>
+      </div>
 
-    <div class="col-md-12 mb-3">
-      <label class="form-label">Catatan PPA / Transfer</label>
-      <textarea name="catatan_transfer" class="form-control form-control-sm" rows="3"><?= @$main['catatan_transfer'] ?></textarea>
+      <!-- Footer Action Buttons Standard Paten RSUD Soedomo -->
+      <div class="col-lg-12 col-md-12 mt-2">
+        <div class="border-dotted"></div>
+        <div class="row mt-2">
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary"><?= _icon('save') ?> Simpan</button>
+            <button type="button" class="btn btn-default" data-bs-dismiss="modal"><?= _icon('cancel') ?> Batal</button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <div class="text-end mt-3">
-    <button type="button" class="btn btn-secondary btn-sm" onclick="_modalHide(2)">
-      <?= _icon('cancel') ?> Batal
-    </button>
-    <button type="submit" class="btn btn-primary btn-sm" id="btn-simpan-tih">
-      <?= _icon('save') ?> Simpan Data
-    </button>
   </div>
 </form>
 ```
 
 ---
 
-### 5.4 Script JS Form Modal (`_js_form_tih_modal.php`)
+### 5.4 Script JS Form Modal (`_js_form_tih_modal.php` - Referensi Paten Standard)
 
 ```html
-<script>
+<script type="text/javascript">
   $(document).ready(function() {
-    // Inisialisasi plugin UI Bootstrap & Select2 di dalam modal
-    $('.select2-modal').select2({
-      dropdownParent: $('#my-modal-2')
-    });
+    $('input[name="erekammedis_id"]').val($('#erekammedis_id_form').val());
 
-    $('#form-tih-input').submit(function(e) {
-      e.preventDefault();
-      var btn = $('#btn-simpan-tih');
-      btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...');
+    // Populate Select2 AJAX untuk data PPA / Dokter / Perawat jika mode Edit
+    <?php if (@$main['dokter_id'] != '') : ?>
+      var ppaId = {
+        id: '<?= @$main['dokter_id'] ?>',
+        text: '<?= @$main['dokter_nm'] ?>'
+      };
+      var ppaIdOption = new Option(ppaId.text, ppaId.id, false, false);
+      $("select[name='dokter_id']").append(ppaIdOption).trigger('change');
+      $("select[name='dokter_id']").val(ppaId.id).trigger('change');
+    <?php endif; ?>
 
-      $.ajax({
-        url: $(this).attr('action'),
-        type: 'POST',
-        data: $(this).serialize() + '&_token=' + _token,
-        dataType: 'json',
-        success: function(resp) {
-          btn.prop('disabled', false).html('<?= _icon('save') ?> Simpan Data');
-          if (resp.status == '01' || resp.status == '02') {
-            _modalHide(2);
-            if (typeof tabel_tih !== 'undefined') {
-              tabel_tih.draw();
-            }
-            _alert('Data berhasil disimpan', 'success');
-          } else {
-            _alert(resp.message || 'Gagal menyimpan data', 'danger');
-          }
-        },
-        error: function() {
-          btn.prop('disabled', false).html('<?= _icon('save') ?> Simpan Data');
-          _alert('Terjadi kesalahan koneksi server', 'danger');
+    // Standard jQuery Validation & Handler Submit Form Modal
+    $("#form-tih-modal").validate({
+      rules: {},
+      messages: {},
+      errorElement: "em",
+      errorPlacement: function(error, element) {
+        error.addClass("invalid-feedback");
+        if (element.prop("type") === "checkbox") {
+          error.insertAfter(element.next("label"));
+        } else if ($(element).hasClass("chosen-select") || $(element).hasClass("select2-ajax")) {
+          error.insertAfter(element.next(".select2-container")).addClass("mt-n2 mb-1");
+        } else if (element.prop("type") === "radio") {
+          error.appendTo(element.parents(".input-checkbox")).addClass("d-block");
+        } else {
+          error.insertAfter(element);
         }
-      });
+      },
+      highlight: function(element, errorClass, validClass) {
+        $(element).addClass("is-invalid").removeClass("is-valid");
+      },
+      unhighlight: function(element, errorClass, validClass) {
+        $(element).addClass("is-valid").removeClass("is-invalid");
+      },
+      submitHandler: function(form) {
+        $("button[type='submit']").attr("disabled", true);
+        loadingShow();
+        var formData = new FormData(form);
+        formData.append("_is_ajax", true);
+        formData.append("_token", _token);
+
+        $.ajax({
+            type: "POST",
+            url: "<?= @$form_act . '?n=' . _get('n') ?>",
+            data: formData,
+            processData: false,
+            contentType: false,
+          })
+          .done(function(res) {
+            if (res == null) {
+              loadingHide();
+              $("button[type='submit']").attr("disabled", false);
+              _toast("error", "Terjadi kesalahan sistem");
+            } else {
+              var message = res.message;
+              if (res.data !== null && res.data != "") {
+                if (typeof res.data === "object" || Array.isArray(res.data)) {
+                  message = res.message;
+                } else {
+                  message = res.message + "<br>" + res.data;
+                }
+              }
+              if (res.status) {
+                _modalHide(2);
+                if (typeof tabel !== 'undefined' && tabel) {
+                  tabel.draw();
+                }
+                loadingHide();
+                $("button[type='submit']").attr("disabled", false);
+                _toast("success", message);
+              } else {
+                loadingHide();
+                $("button[type='submit']").attr("disabled", false);
+                _toast("error", message);
+              }
+            }
+          })
+          .fail(function(xhr, status, error) {
+            loadingHide();
+            $("button[type='submit']").attr("disabled", false);
+            _toast("error", "Terjadi kesalahan sistem<br>" + xhr.status + " (" + error + ")");
+          });
+        return false;
+      },
     });
   });
 </script>
