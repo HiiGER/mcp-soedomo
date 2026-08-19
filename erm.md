@@ -215,7 +215,7 @@ Sub-controller `Erm.php` mendelegasikan seluruh alur kerja Tab E-Rekam Medis pad
 
 1. **`index_erm($pelayanan_id, $registrasi_id)`**:
    - Memuat data hierarki seluruh dokumen ERM (`all_rekam_medis`).
-   - **Otorisasi Role Administrasi RM**: Memeriksa apakah session user aktif memiliki `role_id = '000000000008'` (**ADMINISTRASI REKAM MEDIS**) via `_ses_get('role_id')` atau pengecekan relasi `app_role_user`.
+   - **Otorisasi Role Administrasi RM & Super Admin**: Memeriksa apakah session user aktif memiliki `role_id = '000000000008'` (**ADMINISTRASI REKAM MEDIS**) atau `role_id = '000000000000'` (**SUPER ADMIN**) via `_ses_get('role_id')` atau pengecekan relasi `app_role_user`.
    - Mengirimkan variabel `$d['is_admin_rm']` ke UI View untuk mengontrol visibilitas kolom & tombol verifikasi.
 
 2. **`save_erm($pelayanan_id, $controller)`**:
