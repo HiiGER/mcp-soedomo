@@ -174,6 +174,9 @@ Dokumen ini menjelaskan standar arsitektur pencetakan dokumen medis, pratinjau (
     <!-- (Gunakan Source Code Template Kop Surat di atas) -->
 
     <div class="header-title">JUDUL DOKUMEN CETAK ERM</div>
+    <?php if (!empty($berkas_no)) : ?>
+      <p style="text-align: center; margin: 0; padding: 0;"><strong>(<?= $berkas_no ?>)</strong></p>
+    <?php endif; ?>
 
     <!-- KONTEN SUBSTANTIF DOKUMEN... -->
 

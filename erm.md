@@ -89,6 +89,7 @@ Setiap formulir ERM **wajib terdaftar** di dalam tabel `mst_erekam_medis`.
 | `type_modal` | `VARCHAR(20)` | Tipe peluncur: `'modal'` (Form Input), `'modal-print'` (PDF Preview), `'modal-tte'` (Digital Signature). |
 | `size_modal` | `VARCHAR(20)` | Ukuran Bootstrap modal: `'modal-sm'`, `'modal-md'`, `'modal-lg'`, `'modal-xl'`, `'modal-full-width'`. |
 | `icon` | `VARCHAR(50)` | Icon FontAwesome / Tabler (Contoh: `fas fa-file-medical`, `fas fa-shield-alt`). |
+| `berkas_no` | `VARCHAR(50)` | Nomor berkas/dokumen resmi rekam medis (Contoh: `"RM.73"`, `"RM 7.16"`). |
 | `lokasi_map` | `VARCHAR(255)`| Pemetaan unit lokasi dengan delimiter `#` (Contoh: `POLI#IGD#BANGSAL`). |
 | `active_st` | `CHAR(1)` | Status aktif (`'1'` = Aktif, `'0'` = Non-aktif). |
 | `deleted_st` | `CHAR(1)` | Soft delete status (`'0'` = Normal, `'1'` = Deleted). |
@@ -100,17 +101,68 @@ Setiap formulir ERM **wajib terdaftar** di dalam tabel `mst_erekam_medis`.
 INSERT INTO mst_erekam_medis (erekammedis_id, erekammedis_nm, parent_id, erekammedis_tp, active_st, deleted_st)
 VALUES ('06', 'ASESMEN KHUSUS RSUD SOEDOMO', NULL, 'G', '1', '0');
 
--- 2. Tambah Detail Form ERM Baru
+-- 2. Tambah Detail Form ERM Baru (Beserta berkas_no)
 INSERT INTO mst_erekam_medis (
-    erekammedis_id, erekammedis_nm, parent_id, erekammedis_tp,
+    erekammedis_id, erekammedis_nm, berkas_no, parent_id, erekammedis_tp,
     uri_controller, function_controller, type_modal, size_modal,
     icon, lokasi_map, active_st, deleted_st
 ) VALUES (
-    '06.0001', 'Form Monitoring Pembatasan Gerak (Fisik)', '06', 'D',
+    '06.0001', 'Form Monitoring Pembatasan Gerak (Fisik)', 'RM.73', '06', 'D',
     'uri', 'list_monitoring_pembatasan_gerak_modal/pelayanan_id/registrasi_id', 'modal', 'modal-xl',
     'fas fa-user-lock', 'POLI#IGD#BANGSAL', '1', '0'
 );
 ```
+
+### 2.3 Standar Penyaluran `berkas_no` (Nomor Berkas / Dokumen ERM)
+
+Untuk menampilkan nomor berkas (seperti `RM.73` atau `RM 7.16`) pada header form dan lembar cetak PDF, sistem menggunakan **Positional URL Segment** (DILARANG menggunakan query string `?berkas_no=` karena bentrok dengan parameter navigasi `?n=...`).
+
+1. **Pengaliran dari Sidemenu & Search**:
+   Di `erm_sidebar.php` dan handler `search_erm`, `berkas_no` otomatis ditempelkan sebagai segmen URL paling belakang:
+   ```php
+   if (!empty($rinc['berkas_no'])) {
+       $uri .= '/' . rawurlencode($rinc['berkas_no']);
+   }
+   ```
+   *Hasil URI*: `pelayanan/pelayanan_rajal/list_tih_modal/260818000213/260818000004/RM.73`
+
+2. **Pola Controller 3-Tier Fallback (Wajib pada `list_..._modal`, `form_..._modal`, & `cetak_...`)**:
+   ```php
+   public function list_tih_modal($pelayanan_id = null, $registrasi_id = null, $berkas_no = null)
+   {
+       $d['pelayanan_id']  = @$pelayanan_id;
+       $d['registrasi_id'] = @$registrasi_id;
+
+       // 1. Ambil dari Positional URL Segment / GET
+       $berkas_no = !empty($berkas_no) ? $berkas_no : _get('berkas_no');
+
+       // 2. Failsafe Database Fallback (Jika dipanggil tanpa parameter URL)
+       if (empty($berkas_no)) {
+           $get_erm = DB::raw('row_array', "SELECT berkas_no FROM mst_erekam_medis WHERE function_controller LIKE '%list_tih_modal%' AND deleted_st = 0 AND active_st = 1 LIMIT 1");
+           $berkas_no = @$get_erm['berkas_no'];
+       }
+
+       // 3. Rawurldecode & passing ke view
+       $d['berkas_no'] = rawurldecode(@$berkas_no);
+       $this->render($this->template . '/list_tih_modal', $d);
+   }
+   ```
+
+3. **Penerusan di View List Modal (`list_..._modal.php` & `_js_list_..._modal.php`)**:
+   - **Tombol Tambah Data**:
+     ```html
+     uri: '<?= $this->uri_pelayanan . '/form_tih_modal/' . @$pelayanan_id . '/' . @$registrasi_id . '/0/' . rawurlencode(@$berkas_no) ?>'
+     ```
+   - **Tombol Ubah/Edit**:
+     ```javascript
+     var berkas_no = '<?= @$berkas_no ?>';
+     var uri_edit = '<?= $this->uri_pelayanan . '/form_tih_modal/' . @$pelayanan_id . '/' . @$registrasi_id . '/' ?>' + data + (berkas_no ? '/' + encodeURIComponent(berkas_no) : '');
+     ```
+   - **Tombol Cetak**:
+     ```javascript
+     var berkas_no = '<?= @$berkas_no ?>';
+     var uri_cetak = '<?= $this->uri_pelayanan . '/cetak_tih/' ?>' + row.pelayanan_id + '/' + row.tih_id + (berkas_no ? '/' + encodeURIComponent(berkas_no) : '') + '?n=<?= _get('n') ?>';
+     ```
 
 ---
 
@@ -126,8 +178,16 @@ Agar menu item ERM menampilkan **warna hijau tebal** (`fw-bold text-success`) pa
 - `lokasi_id`
 - `erekammedis_id`
 - `log_erm_tgl` (TIMESTAMP)
+- `verifikasi_st` (`CHAR(1)`, `'1'` = Terverifikasi/Lengkap, `'0'` = Belum)
+- `verifikasi_tgl` (`TIMESTAMP`, Waktu verifikasi dilakukan)
+- `verifikasi_by` (`VARCHAR(50)`, ID/Nama Verifikator)
 
-### 3.2 Pemanggilan Mandatory pada Model Save Procedure
+### 3.2 Fitur Tombol Verifikasi Kelengkapan Berkas
+Tabel DataTables ERM (`datatable-askep`) menyediakan tombol **Verifikasi** di kolom kanan list dokumen untuk memudahkan Verifikator (RM/Casemix/BPJS) memverifikasi kelengkapan dokumen medis:
+- **Verifikasi Instant (AJAX)**: Memanggil `Erm::verifikasi_erm($log_erm_id, $status)` untuk mengubah status tanpa reload halaman.
+- **Badge Indikator**: Menampilkan badge hijau `<span class="badge bg-success">Terverifikasi</span>` bila sudah diverifikasi.
+
+### 3.3 Pemanggilan Mandatory pada Model Save Procedure
 ```php
 // Panggil log_erm setiap kali transaksi simpan ERM BERHASIL
 if ($res['status']) {
@@ -148,6 +208,34 @@ WHERE a.erekammedis_tp = 'D'
   AND a.deleted_st = 0 AND a.active_st = 1
 ORDER BY a.erekammedis_id ASC;
 ```
+
+### 3.4 Standar Arsitektur Sub-Controller `Erm.php` (`pelayanan/controllers/periksa/Erm.php`)
+
+Sub-controller `Erm.php` mendelegasikan seluruh alur kerja Tab E-Rekam Medis pada halaman pemeriksaan pasien:
+
+1. **`index_erm($pelayanan_id, $registrasi_id)`**:
+   - Memuat data hierarki seluruh dokumen ERM (`all_rekam_medis`).
+   - **Otorisasi Role Administrasi RM**: Memeriksa apakah session user aktif memiliki `role_id = '000000000008'` (**ADMINISTRASI REKAM MEDIS**) via `_ses_get('role_id')` atau pengecekan relasi `app_role_user`.
+   - Mengirimkan variabel `$d['is_admin_rm']` ke UI View untuk mengontrol visibilitas kolom & tombol verifikasi.
+
+2. **`save_erm($pelayanan_id, $controller)`**:
+   - Menerima penambahan dokumen ERM baru.
+   - **Form Sanitization**: Secara eksplisit membungkus field sah `log_erekam_medis` (`log_erm_id`, `log_erm_tgl`, `pelayanan_id`, `registrasi_id`, `pasien_id`, `lokasi_id`, `erekammedis_id`) untuk mencegah kegagalan `INSERT` SQL akibat parameter POST tak dikenal (seperti `datatable-askep_length`).
+
+3. **`verifikasi_erm($log_erm_id, $status)`**:
+   - Mengubah status verifikasi kelengkapan berkas (`1` = Terverifikasi, `0` = Batal Verifikasi).
+   - **Enforcement Validasi Ownership**: Pembatalan verifikasi (`status = '0'`) **WAJIB** dilakukan oleh akun verifikator yang sama dengan `verifikasi_by`.
+   - Mengembalikan respon JSON standar SIMRS `_json(_response('01', ...))` / `_json(_response('03', ...))`.
+
+4. **Mandatori Delegasi Routing Parent (`Pelayanan.php` & `Penunjang.php`)**:
+   Setiap method baru di `Erm.php` **WAJIB** didaftarkan delegasinya pada controller parent untuk mencegah error 404:
+   ```php
+   public function verifikasi_erm($log_erm_id = null, $status = '1')
+   {
+       $Erm = new Erm($this->params_controller);
+       $Erm->verifikasi_erm($log_erm_id, $status);
+   }
+   ```
 
 ---
 
