@@ -102,3 +102,66 @@ Dokumen ini berisi daftar inventarisasi error umum, *exception*, *bug*, serta la
 * **Penyebab**: Lupa mengikutsertakan parameter navigasi `?n=` pada pembentukan URL request (AJAX, form submit, modal trigger, atau PDF print). `MY_Controller.php` gagal memverifikasi `nav_id` (`$this->nav == null`).
 * **Solusi**: Pastikan URL request selalu menambahkan `?n=<?= _get('n') ?>` atau `?n=' . $this->nav_id`.
 
+---
+
+## 14. DataTables Missing FROM-Clause Entry (`missing FROM-clause entry for table "b"`)
+* **Gejala**: Error PostgreSQL `missing FROM-clause entry for table "b"` saat melakukan pencarian global (*global search*) pada tabel DataTables.
+* **Penyebab**: Subquery DataTables dibungkus sebagai `SELECT * FROM (...) a`. Ketika mendaftarkan kolom pencarian di array `$search`, kolom dari tabel JOIN yang di-subquery dipanggil menggunakan alias tabel asal (misal `'b.pegawai_nm'`). Karena outer query ber-alias `'a'`, alias `'b'` tidak dikenali di luar subquery.
+* **Solusi**: Gunakan alias dari outer subquery `'a'` pada array `$search` di Model, contoh: `$search = ['a.pengkajiangeriatri_id', 'a.perawat_nm', 'a.kategori_hasil'];`.
+
+---
+
+## 15. Form Modal Reload Halaman Utama Saat Disimpan (*Full-Page Reload Glitch*)
+* **Gejala**: Saat menekan tombol **Simpan** pada modal form level 2, seluruh halaman aplikasi SIMRS ter-reload / ter-refresh kembali ke halaman utama alih-alih hanya menutup modal form.
+* **Penyebab Utama**:
+  1. Helper `_response($res['res'], $uri)` di controller mengembalikan URL redirect `$uri` (misal `$this->uri_pelayanan . '/form/...'`). Script `itm.js` mendeteksi properti `res.uri` lalu mengeksekusi `_page(res.uri)` yang me-reload seluruh kontainer halaman utama.
+  2. Mismatch antara ID form HTML dengan selector JavaScript jQuery Validate (misal `id="form-pengkajian-geriatri-modal"` di HTML, tapi `$("#form-pengkajian_geriatri-modal")` di JS). jQuery Validate gagal meng-bind form sehingga browser mengeksekusi *native browser form submission*.
+* **Solusi**:
+  1. Di Controller, kembalikan URI kosong `''` pada `_response`: `_json(_response($res['res'], ''));`.
+  2. Pastikan ID form HTML dan selector JS 100% identik (`#form-pengkajian-geriatri-modal`).
+  3. Atur atribut tag form `<form action="javascript:void(0)" onsubmit="return save_action(event)">` untuk mengunci native reload.
+
+---
+
+## 16. Event JavaScript Tidak Ter-Trigger pada Dynamic AJAX Modal Load
+* **Gejala**: Kode JavaScript di file `_js_..._modal.php` tidak berjalan saat modal dibuka via AJAX, sehingga event click, change, datepicker, atau validasi form tidak ter-bind.
+* **Penyebab**:
+  1. Penggunaan `$(document).ready(function() { ... })` di dalam view modal. Karena halaman utama SIMRS sudah *ready*, callback `ready()` tidak ter-trigger ulang saat HTML modal diinjeksi via AJAX.
+  2. File `_js_..._modal.php` di-include di baris pertama file view sebelum tag `<form>` di-parse oleh DOM browser.
+* **Solusi**:
+  1. Pindahkan `<?php include '_js_..._modal.php' ?>` ke bagian **paling bawah** file view modal (setelah tag `</form>`).
+  2. Gunakan IIFE (*Immediately Invoked Function Expression*) `(function() { ... })()` atau *Event Delegation* `$(document).off('click change', '.q-radio').on('click change', '.q-radio', ...)` untuk memastikan script langsung berjalan begitu DOM siap.
+
+---
+
+## 17. Kegagalan Perhitungan / Pengecekan Kondisional Akibat Strict Equality (`===`) pada PHP & JS
+* **Gejala**: Hasil perhitungan skor/ringkasan bernilai 0, atau pilihan radio button `checked` tidak muncul saat membuka mode ubah (edit).
+* **Penyebab**: Penggunaan operator pembanding ketat `$val === '1'` atau `($q_val === '1')`. Nilai dari database PostgreSQL atau input POST dapat bertipe `integer` `1` atau string `'1'`. Pengecekan `1 === '1'` pada PHP/JS bernilai `false`.
+* **Solusi**: Gunakan *loose equality comparison* `$val == '1'` dan `($q_val == '1')` serta casting `(string)$val` pada PHP dan JavaScript.
+
+---
+
+## 18. PHP Warning: `Illegal string offset` pada Helper `_frm_select()`
+* **Gejala**: Tampil PHP Warning: `Illegal string offset 'perawat_id'` di log atau tampilan view saat menggunakan `_frm_select`.
+* **Penyebab**: Fungsi helper `_frm_select($field, $data, $val_key, $val_str, ...)` mengekspektasi parameter `$data` sebagai array 2 Dimensi (*array of rows/arrays*). Jika dikirimkan array 1 Dimensi `['00001' => 'Nama']`, helper mencoba mengakses `$r['perawat_id']` pada string.
+* **Solusi**: Tanpa merubah file helper `itm_helper.php`, kirimkan array 2 Dimensi pada parameter kedua:
+  ```php
+  _frm_select(
+    'perawat_id', 
+    (!empty($main['perawat_id']) ? [ ['perawat_id' => $main['perawat_id'], 'perawat_nm' => $main['perawat_nm']] ] : []), 
+    'perawat_id', 
+    'perawat_nm', 
+    @$main['perawat_id'], 
+    '- Pilih Perawat -', 
+    'class="form-select select2-ajax me-2" data-url="ajax_statement/all_pegawai_select2" required'
+  )
+  ```
+
+---
+
+## 19. Dropdown Select2 Perawat/PPA Kosong Saat Mode Edit (*Select2 Pre-Population*)
+* **Gejala**: Saat membuka modal form dalam mode edit, dropdown Select2 Perawat menampilkan `- Pilih -` padahal data `perawat_id` ada di tabel database.
+* **Penyebab**: Pembentukan objek `new Option(text, id, false, false)` menggunakan parameter `defaultSelected = false` dan `selected = false`, atau opsi belum di-append sebelum Select2 AJAX di-inisialisasi.
+* **Solusi**:
+  1. Pre-populate opsi secara native di HTML via `_frm_select` dengan memberikan array 2D `[ ['perawat_id' => $id, 'perawat_nm' => $nm] ]`.
+  2. Pada JavaScript, gunakan `new Option(perawatData.text, perawatData.id, true, true)` dengan `defaultSelected = true` dan `selected = true`, lalu panggil `.trigger('change')`.
