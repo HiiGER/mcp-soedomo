@@ -119,7 +119,6 @@ Pada sistem SIMRS RSUD Soedomo, parameter URL `n` (`?n=...`) merepresentasikan *
 5. **[Kaidah Modal Print & PDF Cetak](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)** (`list-cetak.md`)
    - Acuan paten `cetak_informed_consent_tonsilektomy.php`, Kop Surat 3-Kolom Murni & Simetris (`height: 105px;`), dan styling Dompdf.
 6. **[Panduan Solusi & Penanganan Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)** (`solve-eror.md`)
-   - Inventarisasi 13 poin solusi penanganan error sistem.
+   - Inventarisasi 24 poin solusi penanganan error sistem.
 7. **[Panduan Pengerjaan ERM Mulus & Presisi](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/panduan-erm-mulus.md)** (`panduan-erm-mulus.md`)
    - Breakdown 7 langkah alur pengerjaan ERM terbukti mulus, kalkulasi JS real-time, auto-populate data klinis & DPJP, serta Kop Cetak 3-Kolom.
-

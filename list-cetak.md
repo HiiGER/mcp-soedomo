@@ -233,3 +233,45 @@ Dokumen ini menjelaskan standar arsitektur pencetakan dokumen medis, pratinjau (
 </body>
 </html>
 ```
+
+---
+
+## 3. Standardisasi Mutlak Nomor Berkas RM (`berkas_no`) pada Lembar Cetak PDF & Controller
+
+> [!IMPORTANT]
+> **ATURAN PASTI & WAJIB DITURUTI DI SELURUH MODUL ERM**:
+> Nomor Berkas Rekam Medis (seperti `RM 13.8.1`, `RM 13.9`, `RM 7.16`) **HARUS 100% DINAMIS** dan **DILARANG DI-HARDCODE** secara statis pada view template cetak (`cetak_...php`).
+
+### 3.1. Penarikan `berkas_no` di Level Controller (3-Tier Fallback Rule)
+Setiap method pencetakan di Controller (`cetak_[feature]` dan `cetak_[feature]_all`) WAJIB menerapkan alur penarikan 3-Tier Fallback berikut:
+```php
+$berkas_no = !empty($berkas_no) ? $berkas_no : _get('berkas_no');
+if (empty($berkas_no)) {
+  $get_erm = DB::raw('row_array', "SELECT berkas_no FROM mst_erekam_medis WHERE function_controller LIKE '%list_[feature]_modal%' AND deleted_st = 0 AND active_st = 1 LIMIT 1");
+  $berkas_no = !empty($get_erm['berkas_no']) ? $get_erm['berkas_no'] : '[DEFAULT_RM_KODE]';
+}
+$data['berkas_no'] = rawurldecode(@$berkas_no);
+```
+
+### 3.2. Formatting `berkas_no` di View Template Cetak PDF (`cetak_...php`)
+Penulisan Judul & Nomor Berkas pada lembar cetak PDF WAJIB seragam menggunakan salah satu dari 2 standar resmi berikut:
+
+**Pola A (Judul Terpisah + Sub-Paragraf Nomor Berkas)**:
+```html
+<div class="header-title">[NAMA FORMULIR KAPITAL]</div>
+<p style="text-align: center; margin: 0 0 4px 0; padding: 0; font-size: 9.5px;">
+  <strong>(<?= !empty($berkas_no) ? $berkas_no : '[DEFAULT_RM_KODE]' ?>)</strong>
+</p>
+```
+
+**Pola B (Judul + Inline Span Nomor Berkas)**:
+```html
+<div class="header-title">
+  [NAMA FORMULIR KAPITAL] 
+  <span class="header-number"> (<?= !empty($berkas_no) ? $berkas_no : '[DEFAULT_RM_KODE]' ?>)</span>
+</div>
+```
+
+> [!CAUTION]
+> DILARANG MENULISKAN string RM statis (seperti `(RM 13.8.1)`) tanpa ekspresi PHP `<?= !empty($berkas_no) ? $berkas_no : ... ?>`!
+

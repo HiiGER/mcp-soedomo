@@ -165,3 +165,82 @@ Dokumen ini berisi daftar inventarisasi error umum, *exception*, *bug*, serta la
 * **Solusi**:
   1. Pre-populate opsi secara native di HTML via `_frm_select` dengan memberikan array 2D `[ ['perawat_id' => $id, 'perawat_nm' => $nm] ]`.
   2. Pada JavaScript, gunakan `new Option(perawatData.text, perawatData.id, true, true)` dengan `defaultSelected = true` dan `selected = true`, lalu panggil `.trigger('change')`.
+
+---
+
+## 20. Toast Warning Gagal Simpan Padahal Data Masuk DB & Duplikasi Transaksi (*Multiple Submit Prevention*)
+* **Gejala**: Saat menekan tombol Simpan pada modal form level 2, tampil Toast Warning "Gagal menyimpan data", padahal data fisik terbukti berhasil masuk ke database PostgreSQL. Karena pesan warning muncul, user mengklik tombol Simpan berkali-kali sehingga terjadi duplikasi data transaksi di database.
+* **Penyebab Utama**:
+  1. Helper `_json(_response($res['res'], ''))` mengembalikan objek JSON `{ status: true, message: "Data berhasil disimpan." }`. Objek ini tidak memiliki atribut `res.res`. Pengecekan JS `if (res.res == '01')` bernilai `false`, sehingga JS menganggap gagal dan menampilkan toast warning.
+  2. Tombol Simpan (`btn-primary`) tidak di-disable saat AJAX POST berlangsung, sehingga pengguna dapat mengklik tombol Simpan berulang kali (*double-click / rapid-click*).
+* **Solusi**:
+  1. Pada `_js_form_..._modal.php`, periksa `res.status === true` (atau `res.res === '01' || res.res === '02'`):
+     ```javascript
+     var isSuccess = (res.status === true || res.res === '01' || res.res === '02');
+     var msg = res.message ? res.message : "Data Berhasil Disimpan";
+     if (isSuccess) {
+       _toast("success", msg);
+       _modalHide(2);
+       tabel_main.draw();
+     } else {
+       _toast("warning", msg);
+     }
+     ```
+  2. Selalu kunci tombol simpan saat proses AJAX berjalan:
+     ```javascript
+     $("button[type='submit'].btn-primary, button[type='button'].btn-primary").attr("disabled", true);
+     ```
+     dan buka kembali kunci pada callback `.done()` dan `.fail()`.
+
+---
+
+## 21. DataTables List Modal Tidak Ter-update Setelah Form Modal Disimpan (*DataTables Variable Mismatch*)
+* **Gejala**: Saat menekan tombol Simpan pada modal form level 2, modal form berhasil menutup (`_modalHide(2)`), namun tabel riwayat di Modal Level 1 tidak ter-update/ter-redraw otomatis (data baru seakan-akan tidak tercatat).
+* **Penyebab**: Mismatch nama variabel objek DataTables antara `_js_list_..._modal.php` (misal `var tabel = ...`) dengan `_js_form_..._modal.php` (misal `tabel_intervensi_terapi_wicara.draw()`). Karena variabel `tabel_intervensi_terapi_wicara` bernilai `undefined`, pemanggilan `.draw()` diabaikan secara silent.
+* **Solusi**:
+  1. Samakan nama variabel instance DataTables secara konsisten mengikuti standar `tabel_[nama_fitur]` (misal: `var tabel_intervensi_terapi_wicara = $('#datatable-intervensi_terapi_wicara-main').DataTable(...)`).
+  2. Di `_js_form_..._modal.php`, lakukan fallback redraw terhadap kedua kemungkinan nama variabel:
+     ```javascript
+     if (typeof tabel_intervensi_terapi_wicara !== 'undefined' && tabel_intervensi_terapi_wicara !== null) {
+       tabel_intervensi_terapi_wicara.draw();
+     }
+     if (typeof tabel !== 'undefined' && tabel !== null) {
+       tabel.draw();
+     }
+     ```
+
+---
+
+## 22. Loading DataTables Sangat Lambat Padahal Status Request HTTP 200 (*Heavy Base64 TTD Columns in List Query & Double Slash URL*)
+* **Gejala**: Saat modal list dibuka, DataTables membutuhkan waktu yang sangat lama untuk memuat data padahal HTTP status code bernilai 200 OK.
+* **Penyebab Utama**:
+  1. Method `load_datatables_...()` di Model melakukan `SELECT b.ttd AS perawat_ttd, c.ttd AS dokter_ttd`. Kolom TTD pada `mst_pegawai` berisi string Base64 gambar tanda tangan yang sangat besar (100KB–300KB per baris). Memuat string TTD ke dalam respon JSON DataTables membuat ukuran payload HTTP membengkak.
+  2. Adanya double slash `//` pada URL AJAX DataTables (`pelayanan//ajax_datatables/...`) yang memicu overhead internal routing di CodeIgniter.
+* **Solusi**:
+  1. Hapus penarikan kolom `b.ttd` / `c.ttd` dari query `load_datatables_...()` di Model. Cukup tarik `b.pegawai_nm AS perawat_nm` (kolom TTD cukup ditarik pada method `get_...()` untuk cetak PDF).
+  2. Gunakan `rtrim($this->uri_pelayanan, '/') . '/ajax_datatables/...'` pada `_js_list_..._modal.php` untuk mencegah double slash URL.
+
+---
+
+## 24. Hardcode Nomor Berkas RM (`berkas_no`) pada Lembar Cetak PDF (*Standardisasi Dynamic Berkas No*)
+* **Gejala**: Nomor Berkas RM (seperti `RM 13.8.1`, `RM 13.9`) di-hardcode secara statis di HTML cetak PDF, atau tidak tampil saat `$berkas_no` dikirim dari controller.
+* **Penyebab**: Belum adanya aturan seragam cara penarikan dan penulisan variabel `$berkas_no` di lembar cetak PDF.
+* **Solusi**:
+  1. Pada Controller (`cetak_...` & `cetak_..._all`), wajib jalankan alur **3-Tier Fallback Retrieval**:
+     ```php
+     $berkas_no = !empty($berkas_no) ? $berkas_no : _get('berkas_no');
+     if (empty($berkas_no)) {
+       $get_erm = DB::raw('row_array', "SELECT berkas_no FROM mst_erekam_medis WHERE function_controller LIKE '%list_[fitur]_modal%' AND deleted_st = 0 AND active_st = 1 LIMIT 1");
+       $berkas_no = !empty($get_erm['berkas_no']) ? $get_erm['berkas_no'] : '[DEFAULT_RM_KODE]';
+     }
+     $data['berkas_no'] = rawurldecode(@$berkas_no);
+     ```
+  2. Pada View Cetak PDF (`cetak_...php`), wajib gunakan penulisan dinamis resmi **Pola B**:
+     ```html
+     <div class="header-title">
+       [NAMA FORMULIR KAPITAL] 
+       <span class="header-number"> (<?= !empty($berkas_no) ? $berkas_no : '[DEFAULT_RM_KODE]' ?>)</span>
+     </div>
+     ```
+
+
