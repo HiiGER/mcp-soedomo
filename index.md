@@ -39,8 +39,8 @@ Untuk memastikan konsistensi mutlak 100%, setiap pembuatan atau refactoring modu
                                          v
 +-----------------------------------------------------------------------------------+
 | TAHAP 4: UI MODAL LEVEL 1 - LIST HISTORY DATA                                     |
-| [ modal-style.md ]                                                                |
-| BENCHMARK MUTLAK (TRACKED): list_informed_consent_tonsilektomy_modal.php          |
+| [ modal-style.md & panduan-erm-mulus.md ]                                         |
+| BENCHMARK MUTLAK: list_pengkajian_geriatri_rajal_modal.php (RM 13.8.1)            |
 | 1. Isolasi line 1: <?php include '_js_list_..._modal.php' ?>                      |
 | 2. Tombol "+ Tambah Data" -> _modal(event, {uri: '.../form_...'}, 2)              |
 | 3. Tombol "Cetak" -> _modalPrint(event, {uri: '.../cetak_...'}, 5)                |
@@ -49,20 +49,19 @@ Untuk memastikan konsistensi mutlak 100%, setiap pembuatan atau refactoring modu
                                          v
 +-----------------------------------------------------------------------------------+
 | TAHAP 5: UI MODAL LEVEL 2 - FORM INPUT                                            |
-| [ modal-style.md ]                                                                |
-| BENCHMARK MUTLAK (TRACKED): form_informed_consent_tonsilektomy_modal.php          |
+| [ modal-style.md & panduan-erm-mulus.md ]                                         |
+| BENCHMARK MUTLAK: form_pengkajian_geriatri_rajal_modal.php (RM 13.8.1)            |
 | 1. Isolasi line 1: <?php include '_js_form_..._modal.php' ?>                      |
-| 2. DILARANG wrapper <div class="modal"> & <div class="card">, DILARANG bg-color.  |
+| 2. Multi-trigger Live JS: onchange/onclick inline + $(document).on('change click')|
 | 3. Footer Action Buttons: Simpan (btn-primary) & Batal (btn-default).             |
-| 4. Single-Entry TTD Pihak Non-Pegawai: _modalTtd(callback, 'nama', label, name)  |
-|    dengan triple fallback (this.result -> canvas_0.toDataURL() -> #canvas_image_0)|
+| 4. Auto-populate Diagnosis & Dokter DPJP dari dat_anamnesis & dat_registrasi      |
 +-----------------------------------------------------------------------------------+
                                          |
                                          v
 +-----------------------------------------------------------------------------------+
 | TAHAP 6: LEMBAR CETAK PDF DOMPDF                                                  |
-| [ list-cetak.md ]                                                                 |
-| BENCHMARK MUTLAK (TRACKED): cetak_informed_consent_tonsilektomy.php               |
+| [ list-cetak.md & panduan-erm-mulus.md ]                                          |
+| BENCHMARK MUTLAK: cetak_pengkajian_geriatri_rajal.php (RM 13.8.1)                |
 | 1. Kop Surat 3-Kolom Murni (Box Profil & Box Registrasi height: 105px simetris).  |
 | 2. Title Dokumen di bawah Kop Surat, Digit Box / metadata khusus di body.         |
 | 3. CSS Style: font 9.5px, .page-wrapper (border: 1.5px solid #000).               |
@@ -121,4 +120,6 @@ Pada sistem SIMRS RSUD Soedomo, parameter URL `n` (`?n=...`) merepresentasikan *
    - Acuan paten `cetak_informed_consent_tonsilektomy.php`, Kop Surat 3-Kolom Murni & Simetris (`height: 105px;`), dan styling Dompdf.
 6. **[Panduan Solusi & Penanganan Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)** (`solve-eror.md`)
    - Inventarisasi 13 poin solusi penanganan error sistem.
+7. **[Panduan Pengerjaan ERM Mulus & Presisi](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/panduan-erm-mulus.md)** (`panduan-erm-mulus.md`)
+   - Breakdown 7 langkah alur pengerjaan ERM terbukti mulus, kalkulasi JS real-time, auto-populate data klinis & DPJP, serta Kop Cetak 3-Kolom.
 

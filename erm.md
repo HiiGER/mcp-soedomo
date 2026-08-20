@@ -2,6 +2,15 @@
 
 Dokumen ini merupakan **panduan teknis komprehensif, arsitektur, dan SOP end-to-end** untuk membuat, mengonfigurasi, dan mendaftarkan formulir **E-Rekam Medis (ERM)** baru pada sistem SIMRS RSUD Soedomo.
 
+> [!TIP]
+> **CONTOH ERM BENCHMARK TERBAIK (GOLD STANDARD)**:
+> Implementasi modul ERM baru paling presisi dan mulus: **PENGKAJIAN GERIATRI RAWAT JALAN (RM 13.8.1)** (`06.0003`).
+> - DDL & DML: [ddl_dat_pengkajian_geriatri_rajal.sql](file:///home/geri/ITM/SOEDOMO/simrs/database/ddl_dat_pengkajian_geriatri_rajal.sql)
+> - Model: [M_pelayanan.php](file:///home/geri/ITM/SOEDOMO/simrs/application/modules/pelayanan/models/M_pelayanan.php#L27140-L27356)
+> - Controller: [Pelayanan.php](file:///home/geri/ITM/SOEDOMO/simrs/application/modules/pelayanan/controllers/Pelayanan.php#L29680-L29775)
+> - Form View & JS: [form_pengkajian_geriatri_rajal_modal.php](file:///home/geri/ITM/SOEDOMO/simrs/application/modules/pelayanan/views/pelayanan/asesmen/form_pengkajian_geriatri_rajal_modal.php) & [_js_form_pengkajian_geriatri_rajal_modal.php](file:///home/geri/ITM/SOEDOMO/simrs/application/modules/pelayanan/views/pelayanan/asesmen/_js_form_pengkajian_geriatri_rajal_modal.php)
+> - Cetak PDF Dompdf: [cetak_pengkajian_geriatri_rajal.php](file:///home/geri/ITM/SOEDOMO/simrs/application/modules/pelayanan/views/pelayanan/cetak/cetak_pengkajian_geriatri_rajal.php)
+
 ---
 
 ## 1. Arsitektur & 3 Jalur Akses ERM (*Access Entrypoints*)
