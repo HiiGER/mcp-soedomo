@@ -122,3 +122,5 @@ Pada sistem SIMRS RSUD Soedomo, parameter URL `n` (`?n=...`) merepresentasikan *
    - Inventarisasi 24 poin solusi penanganan error sistem.
 7. **[Panduan Pengerjaan ERM Mulus & Presisi](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/panduan-erm-mulus.md)** (`panduan-erm-mulus.md`)
    - Breakdown 7 langkah alur pengerjaan ERM terbukti mulus, kalkulasi JS real-time, auto-populate data klinis & DPJP, serta Kop Cetak 3-Kolom.
+8. **[Panduan Penggunaan GridTable Dinamis](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/grid-table.md)** (`grid-table.md`)
+   - Kaidah pemetaan data array terurut, auto-fill dinamis dari pengkajian, penanganan unset POST array, dan rendering cetak Dompdf.
