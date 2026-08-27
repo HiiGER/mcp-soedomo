@@ -1,11 +1,11 @@
 # Kaidah & Standar Pembuatan List Cetak & PDF SIMRS RSUD Soedomo
 
-Dokumen ini menjelaskan standar arsitektur pencetakan dokumen medis, pratinjau (*preview*) PDF berbasis modal, Tanda Tangan Elektronik (TTE), dan pembuatan template cetak PDF di SIMRS RSUD Soedomo.
+Dokumen ini menjelaskan standar arsitektur pencetakan dokumen medis, pratinjau (*preview*) PDF berbasis modal, Tanda Tangan Elektronik (TTE) Pegawai via QR Code `generate_ttd()`, dan pembuatan template cetak PDF di SIMRS RSUD Soedomo.
 
 > [!CAUTION]
 > **STANDAR TUNGGAL BENCHMARK LEMBAR CETAK (TRACKED BASE CODE)**:
 > Seluruh pembuatan cetakan PDF ERM **WAJIB KONSISTEN 100%** mengacu pada berkas referensi resmi terkomit di repositori:
-> - `cetak_informed_consent_tonsilektomy.php` & `cetak_informed_consent_mow.php`
+> - `cetak_informed_consent_tonsilektomy.php` & `cetak_permintaan_pelayanan_kerohanian.php`
 > 
 > **ATURAN SUCI KOP SURAT 3-KOLOM (MURNI & SIMETRIS)**:
 > 1. Kop Surat 3-Kolom Official (Logo RS + Identitas, Box Pasien, Box Registrasi) **TIDAK BOLEH DICAMPUR ATAU DIBERI KOMPONEN LAIN** (seperti Form Kode kustom di dalam box, digit box, dll.). Kop Surat harus murni dan bersih!
@@ -145,94 +145,87 @@ Dokumen ini menjelaskan standar arsitektur pencetakan dokumen medis, pratinjau (
 
 ---
 
-## 2. Template Code Full View Cetak ERM (`cetak_..._php`)
+## 2. ATURAN WAJIB TANDA TANGAN PEGAWAI (DOKTER / PERAWAT / PPA) MENGGUNAKAN QR CODE BARCODE (`generate_ttd`)
+
+> [!IMPORTANT]
+> **ATURAN PROSEDURAL WAJIB TTE PEGAWAI SIMRS**:
+> Seluruh Tanda Tangan Pegawai (Dokter DPJP, Dokter Pemeriksa, Perawat, Bidan, Terapis, Nutrisionis, PPA) pada lembar cetak PDF **DIWAJIBKAN 100% MENGGUNAKAN QR CODE / BARCODE TTE** yang dihasilkan oleh fungsi helper `generate_ttd()` dari `application/helpers/itm_helper.php`.
+> **DILARANG MENGGUNAKAN GAMBAR GO RESAN MANUSIA ATAU DUMMY SPASI UNTUK PEGAWAI**.
+
+### 2.1. Sintaks Prosedural di Level Controller (`Pelayanan.php` / Module Controller)
+
+Pada method controller cetak (misal `cetak_[feature]`), WAJIB melakukan pemanggilan helper `generate_ttd()` sebelum memuat view HTML:
+
+```php
+public function cetak_[feature]($pelayanan_id = null, $id = null, $berkas_no = null)
+{
+  ...
+  $data['main'] = $this->m_pelayanan->get_[feature]($id);
+
+  // 1. Identifikasi ID Pegawai (Dokter / Perawat / PPA)
+  $pegawai_id = !empty($data['main']['perawat_id']) ? $data['main']['perawat_id'] : (!empty($data['main']['dokter_id']) ? $data['main']['dokter_id'] : _ses_get('pegawai_id'));
+  
+  // 2. Tentukan Nama Dokumen Resmi (String Kapital)
+  $dokumen_nm = '[NAMA FORMULIR KAPITAL]'; // Contoh: 'PERMINTAAN PELAYANAN KEROHANIAN'
+  
+  // 3. Format Tanggal & Jam TTD (WIB Standard)
+  $tgl_ttd = !empty($data['main']['tgl_ttd']) ? $data['main']['tgl_ttd'] . ' ' . (!empty($data['main']['jam_ttd']) ? $data['main']['jam_ttd'] : '00:00') : date('Y-m-d H:i:s');
+
+  // 4. Generate QR Code Barcode TTE via generate_ttd() helper
+  if (!empty($pegawai_id)) {
+    $data['pegawai_ttd_qr'] = generate_ttd($pelayanan_id, $pegawai_id, $dokumen_nm, $tgl_ttd, '60px');
+  } else {
+    $data['pegawai_ttd_qr'] = '';
+  }
+
+  $html = $this->load->view($this->template . 'cetak/cetak_[feature]', $data, true);
+  $this->load->library('PdfDom');
+  $this->pdfdom->generate($html, $file_pdf, $paper, $orientation);
+}
+```
+
+---
+
+### 2.2. Sintaks Prosedural di Level View Template Cetak PDF (`cetak_...php`)
+
+Pada lembar cetak PDF, blok TTD Pegawai (Dokter/Perawat/PPA) dan Pasien/Keluarga (Non-Pegawai) WAJIB disusun **side-by-side** dengan **height container simetris `65px`** agar sejajar presisi:
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>FORMULIR ERM CETAK - SIMRS RSUD SOEDOMO</title>
-  <style>
-    @page { margin: 10px 15px 10px 15px; }
-    body { font-family: Arial, Helvetica, sans-serif; font-size: 9.5px; color: #000; line-height: 1.2; }
-    .page-wrapper { border: 1.5px solid #000; padding: 6px; position: relative; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
-    .table-bordered th, .table-bordered td { border: 1px solid #000; padding: 3px 4px; }
-    .text-center { text-align: center; }
-    .text-right { text-align: right; }
-    .fw-bold { font-weight: bold; }
-    .header-title { font-size: 12px; font-weight: bold; text-align: center; margin-top: 4px; margin-bottom: 6px; text-decoration: underline; }
-    .check-mark { font-family: DejaVu Sans, sans-serif; font-weight: bold; }
-  </style>
-</head>
-<body>
+<!-- TANDA TANGAN SIDE-BY-SIDE (Sejajar Presisi & Simetris) -->
+<table style="width: 100%; text-align: center; margin-top: 10px;">
+  <tr>
+    <!-- Kolom 1: Pegawai (Dokter / Perawat / PPA) -->
+    <td width="50%" style="vertical-align: top;">
+      <div>Perawat / Dokter DPJP</div>
+      <div style="height: 65px; margin-top: 4px; margin-bottom: 4px;">
+        <?php if (!empty($pegawai_ttd_qr)) : ?>
+          <?= $pegawai_ttd_qr ?>
+        <?php elseif (!empty($pegawai_ttd_src)) : ?>
+          <img src="<?= $pegawai_ttd_src ?>" height="55px">
+        <?php endif; ?>
+      </div>
+      ( <u><?= @$main['perawat_nm_db'] ? $main['perawat_nm_db'] : (@$main['perawat_nm'] ? $main['perawat_nm'] : '...........................................') ?></u> )<br>
+      <span style="font-size: 8.5px;">Tanda Tangan & Nama Terang</span>
+    </td>
 
-  <div class="page-wrapper">
-    
-    <!-- Kop Surat Standard SIMRS RSUD Soedomo (3 Kolom Official Murni & Simetris) -->
-    <!-- (Gunakan Source Code Template Kop Surat di atas) -->
-
-    <div class="header-title">JUDUL DOKUMEN CETAK ERM</div>
-    <?php if (!empty($berkas_no)) : ?>
-      <p style="text-align: center; margin: 0; padding: 0;"><strong>(<?= $berkas_no ?>)</strong></p>
-    <?php endif; ?>
-
-    <!-- KONTEN SUBSTANTIF DOKUMEN... -->
-
-    <!-- Tanda Tangan & Verifikasi PPA & Non-Pegawai -->
-    <?php
-      if (!function_exists('format_ttd_src')) {
-        function format_ttd_src($val) {
-          if (empty($val)) return '';
-          if (strpos($val, 'data:image') === 0) return $val;
-          if (file_exists($val)) return 'data:image/png;base64,' . base64_encode(file_get_contents($val));
-          if (strlen($val) > 50) {
-            return (strpos($val, 'base64,') !== false) ? $val : 'data:image/png;base64,' . $val;
-          }
-          return '';
-        }
-      }
-      $penerima_ttd_src = format_ttd_src(@$main['pihak_menerima_ttd']);
-      $dokter_ttd_src   = format_ttd_src(@$main['dokter_ttd']);
-    ?>
-    <table style="margin-top: 15px; width: 100%;">
-      <tr>
-        <td width="50%" class="text-center" style="vertical-align: top;">
-          Pihak yang Menerima<br>
-          <div style="margin: 3px 0; min-height: 65px;">
-            <?php if (!empty($penerima_ttd_src)): ?>
-              <img src="<?= $penerima_ttd_src ?>" height="65px" />
-            <?php else: ?>
-              <br><br><br><br>
-            <?php endif; ?>
-          </div>
-          ( <u><?= @$main['pihak_menerima_nm'] ? @$main['pihak_menerima_nm'] : '...........................................' ?></u> )<br>
-          <small style="font-size: 8px;">Tanda Tangan dan Nama Terang</small>
-        </td>
-        <td width="50%" class="text-center" style="vertical-align: top;">
-          Trenggalek, <?= to_date(@$main['dokter_tgl_jam'], '', 'date') ?> Jam : <?= to_date(@$main['dokter_tgl_jam'], '', 'time') ?><br>
-          Dokter DPJP<br>
-          <div style="margin: 3px 0; min-height: 65px;">
-            <?php if (@$bsre == 1 || @$bsre == true): ?>
-              <img height="65px" src="data:image/png;base64,<?= generate_qr_code_base64(@$main['dokter_nm'] . ', DOKTER DPJP ,' . @$main['dokter_tgl_jam']); ?>" />
-            <?php elseif (!empty($dokter_ttd_src)): ?>
-              <img src="<?= $dokter_ttd_src ?>" height="65px" />
-            <?php else: ?>
-              <br><br><br><br>
-            <?php endif; ?>
-          </div>
-          ( <u><?= @$main['dokter_nm'] ? @$main['dokter_nm'] : '...........................................' ?></u> )<br>
-          <small style="font-size: 8px;">Tanda Tangan dan Nama Terang</small>
-        </td>
-      </tr>
-    </table>
-
-  </div>
-
-</body>
-</html>
+    <!-- Kolom 2: Pasien / Keluarga / Penanggung Jawab (Non-Pegawai) -->
+    <td width="50%" style="vertical-align: top;">
+      <div>Pasien / Keluarga</div>
+      <div style="height: 65px; margin-top: 4px; margin-bottom: 4px;">
+        <?php if (!empty($pasien_ttd_src)) : ?>
+          <img src="<?= $pasien_ttd_src ?>" height="55px">
+        <?php endif; ?>
+      </div>
+      ( <u><?= @$main['pasien_keluarga_nm'] ? $main['pasien_keluarga_nm'] : (@$main['pemohon_nama'] ? $main['pemohon_nama'] : '...........................................') ?></u> )<br>
+      <span style="font-size: 8.5px;">Tanda Tangan & Nama Terang</span>
+    </td>
+  </tr>
+</table>
 ```
+
+> [!CAUTION]
+> **ATURAN KESEJAJARAN (ALIGNMENT) BARIS TTD**:
+> DILARANG menggunakan tag `<br><br><br>` acak pada salah satu kolom. Gunakan `<div>` dengan `height: 65px; margin-top: 4px; margin-bottom: 4px;` pada kedua kolom agar garis nama terang `( <u>Nama</u> )` 100% sejajar horizontal.
 
 ---
 
@@ -240,10 +233,9 @@ Dokumen ini menjelaskan standar arsitektur pencetakan dokumen medis, pratinjau (
 
 > [!IMPORTANT]
 > **ATURAN PASTI & WAJIB DITURUTI DI SELURUH MODUL ERM**:
-> Nomor Berkas Rekam Medis (seperti `RM 13.8.1`, `RM 13.9`, `RM 7.16`) **HARUS 100% DINAMIS** dan **DILARANG DI-HARDCODE** secara statis pada view template cetak (`cetak_...php`).
+> Nomor Berkas Rekam Medis (seperti `RM 13.8.1`, `RM 13.9`, `RM 7.12`, `RM 7.16`) **HARUS 100% DINAMIS** dan **DILARANG DI-HARDCODE** secara statis pada view template cetak (`cetak_...php`).
 
 ### 3.1. Penarikan `berkas_no` di Level Controller (3-Tier Fallback Rule)
-Setiap method pencetakan di Controller (`cetak_[feature]` dan `cetak_[feature]_all`) WAJIB menerapkan alur penarikan 3-Tier Fallback berikut:
 ```php
 $berkas_no = !empty($berkas_no) ? $berkas_no : _get('berkas_no');
 if (empty($berkas_no)) {
@@ -271,7 +263,3 @@ Penulisan Judul & Nomor Berkas pada lembar cetak PDF WAJIB seragam menggunakan s
   <span class="header-number"> (<?= !empty($berkas_no) ? $berkas_no : '[DEFAULT_RM_KODE]' ?>)</span>
 </div>
 ```
-
-> [!CAUTION]
-> DILARANG MENULISKAN string RM statis (seperti `(RM 13.8.1)`) tanpa ekspresi PHP `<?= !empty($berkas_no) ? $berkas_no : ... ?>`!
-

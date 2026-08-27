@@ -13,7 +13,7 @@ Dalam membangun atau memodifikasi modul ERM, pengembang dan AI **WAJIB MEMAHAMI 
 3. **[Tahap 3: Controller HMVC & Route Parameter Navigasi](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)**: Susun route Level 1 List Modal, Level 2 Form Modal, AJAX submit, & Print PDF (Wajib melampirkan parameter `?n=<?= _get('n') ?>`).
 4. **[Tahap 4: UI Level 1 List Modal](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)**: Mengacu paten `list_informed_consent_tonsilektomy_modal.php`.
 5. **[Tahap 5: UI Level 2 Form Modal & TTD](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)**: Mengacu paten `form_informed_consent_tonsilektomy_modal.php` + Efisiensi Single-Entry TTD `_modalTtd`.
-6. **[Tahap 6: PDF Cetak Dompdf](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)**: Mengacu paten `cetak_informed_consent_tonsilektomy.php` + Kop Surat 3-Kolom Murni & Simetris (`height: 105px;`).
+6. **[Tahap 6: PDF Cetak Dompdf](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)**: Mengacu paten `cetak_permintaan_pelayanan_kerohanian.php` + Kop Surat 3-Kolom Murni & Simetris (`height: 105px;`) + Mandatori TTD Barcode QR Code Pegawai `generate_ttd()`.
 7. **[Tahap 7: Audit Solusi Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)**: Konsultasi 13 poin inventarisasi error jika terjadi kendala runtime.
 
 ---

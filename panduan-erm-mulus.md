@@ -106,7 +106,7 @@ flowchart TD
   - Kolom 3 (`32%`): Box Metadata Registrasi (`height: 105px;`) 6 baris standard.
 - **Standardisasi Mutlak `berkas_no`**: Wajib menggunakan 3-Tier Fallback Retrieval di Controller dan ekspresi dinamis `(<?= !empty($berkas_no) ? $berkas_no : 'RM XX.X' ?>)` pada `.header-title` lembar cetak PDF. Dilarang meng-hardcode string RM statis.
 - **DejaVu Sans for Checkmarks**: Gunakan entitas HTML `&#9745;` (checked) & `&#9744;` (unchecked) dengan `font-family: DejaVu Sans, sans-serif`.
-- **Side-by-side Signatures**: Tanda tangan Perawat & Dokter DPJP menggunakan helper `format_ttd_src()`.
+- **Side-by-side Signatures & Mandatory Barcode QR Code TTE Pegawai**: Tanda tangan Pegawai (Dokter/Perawat/PPA) **WAJIB MENGGUNAKAN QR CODE BARCODE** via helper `generate_ttd($pelayanan_id, $pegawai_id, $dokumen_nm, $tgl_ttd, '60px')`. Tanda tangan Pasien/Keluarga (Non-Pegawai) menggunakan helper `format_ttd_src()`. Kedua area TTD dibungkus container `height: 65px;` agar sejajar presisi.
 
 ---
 
