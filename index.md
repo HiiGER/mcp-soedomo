@@ -65,7 +65,7 @@ Untuk memastikan konsistensi mutlak 100%, setiap pembuatan atau refactoring modu
 | 1. Kop Surat 3-Kolom Murni (Box Profil & Box Registrasi height: 105px simetris).  |
 | 2. Title Dokumen di bawah Kop Surat, Digit Box / metadata khusus di body.         |
 | 3. CSS Style: font 9.5px, .page-wrapper (border: 1.5px solid #000).               |
-| 4. Centang DejaVu Sans (&#9745; / &#9744;), TTD Rendering via format_ttd_src().   |
+| 4. Centang DejaVu Sans (&#9745; / &#9744;), TTD Pegawai WAJIB Barcode QR Code via generate_ttd(). |
 +-----------------------------------------------------------------------------------+
                                          |
                                          v
