@@ -243,4 +243,12 @@ Dokumen ini berisi daftar inventarisasi error umum, *exception*, *bug*, serta la
      </div>
      ```
 
+---
 
+## 25. Error PostgreSQL relation "dat_..." does not exist / Auto-Create Table Code Policy
+* **Gejala**: PostgreSQL Error `relation "dat_..." does not exist` saat membuka menu/modal ERM.
+* **Penyebab Utama**: Tabel database belum dibuat oleh developer pada database server PostgreSQL. Pengembang/AI **DILARANG KERAS** menyertakan fungsi *auto-create table*, *auto-migration*, `ensure_table`, atau pengecekan `to_regclass` / `information_schema` di layer Model/Controller aplikasi.
+* **Solusi**:
+  1. AI / Aplikasi HANYA membuat file query DDL & DML SQL (misal `database/ddl_dat_[nama_fitur].sql`).
+  2. Developer mengeksekusi file SQL tersebut secara manual ke database PostgreSQL.
+  3. Hapus seluruh blok *auto-create table* / `ensure_table` dari Model dan Controller agar layer aplikasi tetap murni dan ringan.

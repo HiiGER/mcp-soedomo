@@ -61,6 +61,12 @@ Setiap tabel transaksi (`dat_`) **WAJIB** menyertakan **8 kolom metadata audit l
 
 ---
 
+> [!IMPORTANT]
+> **PRINSIP EKSEKUSI DATABASE & DDL (DILARANG AUTO-CREATE TABLE)**
+> 1. **Tugas Developer**: Pembuatan tabel, penambahan kolom, dan eksekusi script SQL ke database PostgreSQL **WAJIB DILAKUKAN SECARA MANUAL OLEH DEVELOPER**.
+> 2. **Tugas AI / Code Generator**: AI / Aplikasi **HANYA** bertugas menyusun query SQL (DDL `CREATE TABLE` & DML `INSERT INTO mst_erekam_medis`) dan menyimpannya ke dalam file script `.sql` (contoh: `simrs/database/ddl_dat_[nama_fitur].sql`).
+> 3. **DILARANG AUTO-MIGRATION IN-CODE**: **DILARANG KERAS** menyertakan fungsi *auto-create table*, *auto-migration*, `ensure_table`, atau pengecekan `to_regclass` / `information_schema` di layer Model (`M_pelayanan.php`) maupun Controller! Model dan Controller hanya bertugas menjalankan query DML (CRUD / DataTables) terhadap tabel yang sudah dibuat oleh Developer.
+
 ## 5. SQL Blueprint Template Pembuatan Tabel Baru
 
 Berikut adalah template resmi DDL SQL untuk membuat tabel transaksi baru di RSUD Soedomo:

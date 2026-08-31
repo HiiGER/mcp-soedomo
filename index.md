@@ -2,7 +2,9 @@
 
 Selamat datang di repositori dokumentasi resmi pengembangan **SIMRS RSUD Soedomo**. Dokumentasi ini dirancang sebagai acuan mutlak bagi pengembang dan agen kecerdasan buatan (AI) untuk menghasilkan sistem E-Rekam Medis (ERM) yang 100% konsisten, presisi, dan aman.
 
----
+> [!IMPORTANT]
+> **PRINSIP EKSEKUSI DATABASE**:
+> Pembuatan tabel database **WAJIB DILAKUKAN OLEH DEVELOPER**. AI / aplikasi HANYA bertugas membuat query DDL/DML ke file script `.sql` (contoh: `database/ddl_dat_[nama_fitur].sql`). DILARANG KERAS membuat fungsi *auto-create table*, *auto-migration*, `ensure_table`, atau pengecekan `to_regclass` / `information_schema` di layer Model maupun Controller!
 
 ## 🗺️ KAMUS TAHAPAN EKSEKUSI ERM (ALUR MANDATORI STEP-BY-STEP)
 
@@ -10,10 +12,10 @@ Untuk memastikan konsistensi mutlak 100%, setiap pembuatan atau refactoring modu
 
 ```
 +-----------------------------------------------------------------------------------+
-| TAHAP 1: DATABASE SCHEMA & AUDIT LOGS                                             |
+| TAHAP 1: DATABASE SCHEMA & AUDIT LOGS (SCRIPT DDL OLEH AI, EKSEKUSI OLEH DEV)     |
 | [ database-style.md & database-helper.md ]                                        |
 | 1. DDL Tabel PostgreSQL (dat_... / mst_...) + 8 Kolom Audit Log Mandatori.        |
-| 2. Kolom TTD Non-Pegawai (jika ada): [nama]_nm VARCHAR(150), [nama]_ttd TEXT.     |
+| 2. Script SQL disimpan di file ddl_...sql (EKSEKUSI MANUAL OLEH DEVELOPER).       |
 | 3. Concurrency-safe ID: DB::get_id($table) -> DB::insert() -> DB::update_id().    |
 | 4. DML Registrasi Menu ERM ke mst_erekam_medis.                                   |
 +-----------------------------------------------------------------------------------+
