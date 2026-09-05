@@ -126,3 +126,6 @@ Pada sistem SIMRS RSUD Soedomo, parameter URL `n` (`?n=...`) merepresentasikan *
    - Breakdown 7 langkah alur pengerjaan ERM terbukti mulus, kalkulasi JS real-time, auto-populate data klinis & DPJP, serta Kop Cetak 3-Kolom.
 8. **[Panduan Penggunaan GridTable Dinamis](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/grid-table.md)** (`grid-table.md`)
    - Kaidah pemetaan data array terurut, auto-fill dinamis dari pengkajian, penanganan unset POST array, dan rendering cetak Dompdf.
+9. **[Panduan Asesmen Keperawatan Rawat Inap (RM 13.1)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-keperawatan-ranap.md)** (`asesmen-keperawatan-ranap.md`)
+   - Alur kerja komprehensif, panduan maintenance, standar alur pembuatan, mapping database, serta helper auto-fill master pasien & diagnosa medis.
+
