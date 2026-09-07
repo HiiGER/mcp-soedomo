@@ -58,7 +58,11 @@ Dokumentasi ini berisi acuan resmi alur kerja, standar pembuatan, prosedur maint
 | **Tab 4 View** | `.../asesmen_keperawatan_ranap_umum/hal4_eliminasi_edukasi.php` | Eliminasi BAB/BAK, Seksual/Reproduksi, Hambatan & Kebutuhan Edukasi. |
 | **Tab 5 View** | `.../asesmen_keperawatan_ranap_umum/hal5_gizi_diagnosa.php` | MST Dewasa, Strong Kids (Anak), Resume Keperawatan, Diagnosa Keperawatan, Discharge Planning, & Select2 PPA. |
 | **JS Engine** | `.../asesmen/_js_asesmen_keperawatan_ranap_umum_modal.php` | Auto-population, scoring listeners, & Select2 parent handler. |
-| **DB Script** | `database/ALTER_TABLE_dat_asesmen_keperawatan_ranap_RM13_1.sql` | File DDL penambahan & pembaruan struktur kolom PostgreSQL/MySQL. |
+| **DB Script** | `database/ALTER_TABLE_dat_asesmen_keperawatan_ranap_RM13_1.sql` | File DDL penambahan & pembaruan struktur kolom PostgreSQL/MySQL RM 13.1. |
+| **Neonatus Controller**| `application/modules/pelayanan/controllers/Pelayanan.php` | Route `form_asesmen_keperawatan_ranap_neonatus_modal` & `save_asesmen_keperawatan_ranap_neonatus`. |
+| **Neonatus Model** | `application/modules/pelayanan/models/M_pelayanan.php` | Method `save_asesmen_keperawatan_ranap_neonatus` (`jenis_asesmen = 'NEONATUS'`). |
+| **Neonatus View** | `application/modules/pelayanan/views/pelayanan/asesmen/asesmen_keperawatan_ranap_neonatus_modal.php` | Wrapper Modal 4 Tab Asesmen Neonatal (RM 13.5.1). |
+| **Neonatus DDL** | `database/ALTER_TABLE_dat_asesmen_keperawatan_ranap_Neonatus_RM13_5_1.sql` | File DDL migration penambahan kolom khusus neonatal. |
 
 ---
 
@@ -168,31 +172,39 @@ ALTER TABLE dat_asesmen_keperawatan_ranap
   ADD COLUMN IF NOT EXISTS edukasi_budaya varchar(250);
 ```
 
-### 🏷️ Penerapan & Konsep Discriminator `jenis_asesmen`
+### 🏷️ Penerapan & Konsep Discriminator `jenis_asesmen` & Multi-Record Strategy
 
-Tabel `dat_asesmen_keperawatan_ranap` merupakan **Shared Table** (satu tabel yang digunakan bersama oleh berbagai varian formulir asesmen keperawatan rawat inap). Untuk membedakan data antar-formulir tanpa perlu membuat tabel baru, digunakan kolom `jenis_asesmen` sebagai **Discriminator Key**:
+Tabel `dat_asesmen_keperawatan_ranap` merupakan **Shared Table** (satu tabel yang digunakan bersama oleh berbagai varian formulir asesmen keperawatan rawat inap). Untuk membedakan data antar-formulir tanpa perlu membuat tabel baru:
 
-1. **Skema & Alter Size (`VARCHAR(50)`)**:
-   Dahulu kolom `jenis_asesmen` berukuran pendek sehingga rentan terjadi *string truncation error* saat diisi identifier panjang. Pada script `ALTER_TABLE_dat_asesmen_keperawatan_ranap_RM13_1.sql`, tipe kolom diubah menjadi `VARCHAR(50)`:
+1. **Prinsip Record Terpisah per `jenis_asesmen` (Bukan Overwrite)**:
+   Setiap jenis asesmen (misal: `UMUM` vs `NEONATUS` vs `KEBIDANAN`) pada satu nomor pelayanan yang sama (`pelayanan_id`) akan **membuat record (baris) tersendiri di database**, bukan menimpa (overwrite) record jenis asesmen lainnya.
+   - Pengecekan saat simpan (`save_...`):
+     ```php
+     // Pengecekan spesifik untuk NEONATUS
+     $cek = DB::raw('row_array', "SELECT * FROM dat_asesmen_keperawatan_ranap WHERE pelayanan_id = ? AND jenis_asesmen = 'NEONATUS' ORDER BY asesmenkeperawatanranap_id DESC LIMIT 1", [$pelayanan_id]);
+     ```
+     Jika record `NEONATUS` sudah ada, maka dilakukan `UPDATE` pada record `NEONATUS` tersebut.  
+     Jika belum ada, maka dilakukan `INSERT` record baru dengan `jenis_asesmen = 'NEONATUS'`.
+
+2. **Mekanisme Auto-Fill Data (Pinjam Data untuk Inisialisasi)**:
+   Ketika formulir jenis asesmen baru (misal: Neonatus) pertama kali dibuka dan record `NEONATUS` belum ada:
+   - System dapat meminjam data dasar (seperti `keluhan_utama`, `pemeriksaan_rr`, `pemeriksaan_suhu`, perawat, dll.) dari record asesmen lain yang sudah ada pada `pelayanan_id` tersebut atau dari `dat_anamnesis`.
+   - **PENTING**: Saat meminjam data awal tersebut, `asesmenkeperawatanranap_id` dan `jenis_asesmen` pada variabel data di-`unset()` di Controller agar saat tombol simpan diklik, sistem mengeksekusi `INSERT` record baru khusus untuk `NEONATUS`, bukan menimpa record lama.
+
+3. **Skema & Alter Size (`VARCHAR(50)`)**:
+   Tipe kolom `jenis_asesmen` diset menjadi `VARCHAR(50)` untuk keamanan identifier:
    ```sql
    ALTER TABLE dat_asesmen_keperawatan_ranap ALTER COLUMN jenis_asesmen TYPE varchar(50);
    ```
-2. **Standardisasi Nilai `jenis_asesmen`**:
-   | Modul Formulir Asesmen | Value `jenis_asesmen` di Model | File Controller & View |
+
+4. **Standardisasi Nilai `jenis_asesmen`**:
+   | Modul Formulir Asesmen | Value `jenis_asesmen` di Model | File Controller & Model Handler |
    | :--- | :--- | :--- |
    | **Asesmen Keperawatan Ranap Umum (RM 13.1)** | `'UMUM'` | `save_asesmen_keperawatan_ranap_umum` |
    | **Asesmen Keperawatan Kebidanan** | `'KEBIDANAN'` | `save_asesmen_keperawatan_ranap_kebidanan` |
    | **Asesmen Keperawatan Neonatus / Perinatal** | `'NEONATUS'` | `save_asesmen_keperawatan_ranap_neonatus` |
    | **Asesmen Keperawatan Anak / Pediatrik** | `'PEDIATRIK'` | `save_asesmen_keperawatan_ranap_pediatrik` |
    | **Asesmen Keperawatan Intensif (ICU/HCU)** | `'INTENSIF'` | `save_asesmen_keperawatan_ranap_intensif` |
-
-3. **Penerapan di Model Handler (`M_pelayanan.php`)**:
-   Saat proses `save`, variabel `$d['jenis_asesmen']` diset secara eksplisit di layer backend sebelum proses `INSERT`/`UPDATE`:
-   ```php
-   $d['pelayanan_id']  = $pelayanan_id;
-   $d['registrasi_id'] = @$pelayanan['registrasi_id'];
-   $d['jenis_asesmen'] = 'UMUM'; // Set discriminator key
-   ```
 
 ---
 
