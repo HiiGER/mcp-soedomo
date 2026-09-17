@@ -27,3 +27,4 @@ Dalam membangun atau memodifikasi modul ERM, pengembang dan AI **WAJIB MEMAHAMI 
 5. **[Kaidah UI Modal Form](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)** (`modal-style.md`)
 6. **[Kaidah Modal Print & PDF Cetak](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)** (`list-cetak.md`)
 7. **[Panduan Solusi & Penanganan Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)** (`solve-eror.md`)
+8. **[Blueprint Standar E-Rekam Medis Khusus Form OP (IBS)](erm-form-op.md)** (`erm-form-op.md`) - *Dual-Integration Form OP & Global ERM, No btn-sm Button Rule*

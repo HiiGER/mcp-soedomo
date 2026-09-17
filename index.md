@@ -128,4 +128,6 @@ Pada sistem SIMRS RSUD Soedomo, parameter URL `n` (`?n=...`) merepresentasikan *
    - Kaidah pemetaan data array terurut, auto-fill dinamis dari pengkajian, penanganan unset POST array, dan rendering cetak Dompdf.
 9. **[Panduan Asesmen Keperawatan Rawat Inap (RM 13.1)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-keperawatan-ranap.md)** (`asesmen-keperawatan-ranap.md`)
    - Alur kerja komprehensif, panduan maintenance, standar alur pembuatan, mapping database, serta helper auto-fill master pasien & diagnosa medis.
+10. **[Blueprint Standar E-Rekam Medis Khusus Form OP (IBS)](erm-form-op.md)** (`erm-form-op.md`)
+    - Konsep Dual-Integration (Penunjang IBS & Global ERM), aturan mandatori button (no `btn-sm` untuk tambah data), standardisasi model `log_erm`, routing controller, view IBS, form modal multi-section, dan PDF cetak 3-kolom Dompdf.
 
