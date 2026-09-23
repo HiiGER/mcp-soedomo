@@ -83,6 +83,10 @@ flowchart TD
 
 ## 2. Struktur Master ERM (`mst_erekam_medis`) & Pendaftaran Form Baru
 
+> [!IMPORTANT]
+> **ATURAN EKSEKUSI DATABASE & DDL**:
+> Pembuatan tabel transaksi (`dat_...`) dan registrasi `mst_erekam_medis` pada database PostgreSQL **WAJIB DILAKUKAN SECARA MANUAL OLEH DEVELOPER**. AI hanya menyusun file script `.sql` (misal `database/ddl_dat_[nama_fitur].sql`). **DILARANG KERAS** menyertakan logika *auto-create table*, *auto-migrate*, `ensure_table`, atau pengecekan `to_regclass` / `information_schema` di layer Model maupun Controller!
+
 Setiap formulir ERM **wajib terdaftar** di dalam tabel `mst_erekam_medis`.
 
 ### 2.1 Skema Tabel `mst_erekam_medis`

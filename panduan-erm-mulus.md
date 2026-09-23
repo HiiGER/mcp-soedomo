@@ -35,6 +35,7 @@ flowchart TD
 ---
 
 ### 1. Tahap 1: Isolasi Database, Primary Key & Pendaftaran Master ERM
+- **Pembuatan Database (Manual oleh Developer)**: Pembuatan/eksekusi tabel di database PostgreSQL **WAJIB DILAKUKAN SECARA MANUAL OLEH DEVELOPER**. AI / aplikasi **HANYA** menyusun query DDL/DML ke file script (misal: `database/ddl_dat_[nama_fitur].sql`). **DILARANG KERAS** menyertakan logika *auto-create table*, *auto-migration*, `ensure_table`, atau pengecekan `to_regclass` / `information_schema` di layer Model maupun Controller.
 - **Nama Tabel Baru**: Wajib menggunakan prefix `dat_` dan nama deskriptif unik (misal: `dat_pengkajian_geriatri_rajal`).
 - **Aturan Primary Key**: Wajib bernama `[namatabel_tanpa_prefix]_id` VARCHAR(50) (misal: `pengkajiangeriatrirajal_id`).
 - **8 Kolom Audit Log Mandatory**:

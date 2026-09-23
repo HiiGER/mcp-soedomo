@@ -8,7 +8,7 @@ Repositori ini berisi seluruh dokumentasi teknis, standar arsitektur, panduan ba
 
 Dalam membangun atau memodifikasi modul ERM, pengembang dan AI **WAJIB MEMAHAMI DAN MENGIKUTI TAHAPAN BERURUTAN**:
 
-1. **[Tahap 1: Database & Advisory Lock ID](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-style.md)**: Buat DDL PostgreSQL (8 kolom audit log wajib) + Registrasi `mst_erekam_medis`.
+1. **[Tahap 1: Database & Advisory Lock ID](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-style.md)**: Buat file query DDL PostgreSQL (8 kolom audit log wajib) + DML Registrasi `mst_erekam_medis`. (Eksekusi database dilakukan MANUAL oleh Developer, DILARANG auto-create table di Model/Controller).
 2. **[Tahap 2: Model & Status Log ERM](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)**: Buat DataTables Server-Side query `SELECT * FROM (...) a` & panggil `log_erm()` di method simpan.
 3. **[Tahap 3: Controller HMVC & Route Parameter Navigasi](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)**: Susun route Level 1 List Modal, Level 2 Form Modal, AJAX submit, & Print PDF (Wajib melampirkan parameter `?n=<?= _get('n') ?>`).
 4. **[Tahap 4: UI Level 1 List Modal](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)**: Mengacu paten `list_informed_consent_tonsilektomy_modal.php`.
@@ -27,3 +27,4 @@ Dalam membangun atau memodifikasi modul ERM, pengembang dan AI **WAJIB MEMAHAMI 
 5. **[Kaidah UI Modal Form](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)** (`modal-style.md`)
 6. **[Kaidah Modal Print & PDF Cetak](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)** (`list-cetak.md`)
 7. **[Panduan Solusi & Penanganan Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)** (`solve-eror.md`)
+8. **[Blueprint Standar E-Rekam Medis Khusus Form OP (IBS)](erm-form-op.md)** (`erm-form-op.md`) - *Dual-Integration Form OP & Global ERM, No btn-sm Button Rule*

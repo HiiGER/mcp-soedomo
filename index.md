@@ -2,7 +2,9 @@
 
 Selamat datang di repositori dokumentasi resmi pengembangan **SIMRS RSUD Soedomo**. Dokumentasi ini dirancang sebagai acuan mutlak bagi pengembang dan agen kecerdasan buatan (AI) untuk menghasilkan sistem E-Rekam Medis (ERM) yang 100% konsisten, presisi, dan aman.
 
----
+> [!IMPORTANT]
+> **PRINSIP EKSEKUSI DATABASE**:
+> Pembuatan tabel database **WAJIB DILAKUKAN OLEH DEVELOPER**. AI / aplikasi HANYA bertugas membuat query DDL/DML ke file script `.sql` (contoh: `database/ddl_dat_[nama_fitur].sql`). DILARANG KERAS membuat fungsi *auto-create table*, *auto-migration*, `ensure_table`, atau pengecekan `to_regclass` / `information_schema` di layer Model maupun Controller!
 
 ## 🗺️ KAMUS TAHAPAN EKSEKUSI ERM (ALUR MANDATORI STEP-BY-STEP)
 
@@ -10,10 +12,10 @@ Untuk memastikan konsistensi mutlak 100%, setiap pembuatan atau refactoring modu
 
 ```
 +-----------------------------------------------------------------------------------+
-| TAHAP 1: DATABASE SCHEMA & AUDIT LOGS                                             |
+| TAHAP 1: DATABASE SCHEMA & AUDIT LOGS (SCRIPT DDL OLEH AI, EKSEKUSI OLEH DEV)     |
 | [ database-style.md & database-helper.md ]                                        |
 | 1. DDL Tabel PostgreSQL (dat_... / mst_...) + 8 Kolom Audit Log Mandatori.        |
-| 2. Kolom TTD Non-Pegawai (jika ada): [nama]_nm VARCHAR(150), [nama]_ttd TEXT.     |
+| 2. Script SQL disimpan di file ddl_...sql (EKSEKUSI MANUAL OLEH DEVELOPER).       |
 | 3. Concurrency-safe ID: DB::get_id($table) -> DB::insert() -> DB::update_id().    |
 | 4. DML Registrasi Menu ERM ke mst_erekam_medis.                                   |
 +-----------------------------------------------------------------------------------+
@@ -124,3 +126,8 @@ Pada sistem SIMRS RSUD Soedomo, parameter URL `n` (`?n=...`) merepresentasikan *
    - Breakdown 7 langkah alur pengerjaan ERM terbukti mulus, kalkulasi JS real-time, auto-populate data klinis & DPJP, serta Kop Cetak 3-Kolom.
 8. **[Panduan Penggunaan GridTable Dinamis](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/grid-table.md)** (`grid-table.md`)
    - Kaidah pemetaan data array terurut, auto-fill dinamis dari pengkajian, penanganan unset POST array, dan rendering cetak Dompdf.
+9. **[Panduan Asesmen Keperawatan Rawat Inap (RM 13.1)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-keperawatan-ranap.md)** (`asesmen-keperawatan-ranap.md`)
+   - Alur kerja komprehensif, panduan maintenance, standar alur pembuatan, mapping database, serta helper auto-fill master pasien & diagnosa medis.
+10. **[Blueprint Standar E-Rekam Medis Khusus Form OP (IBS)](erm-form-op.md)** (`erm-form-op.md`)
+    - Konsep Dual-Integration (Penunjang IBS & Global ERM), aturan mandatori button (no `btn-sm` untuk tambah data), standardisasi model `log_erm`, routing controller, view IBS, form modal multi-section, dan PDF cetak 3-kolom Dompdf.
+
