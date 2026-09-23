@@ -4,7 +4,8 @@ Dokumen ini merupakan **panduan teknis komprehensif, arsitektur, dan SOP end-to-
 
 > [!TIP]
 > **CONTOH ERM BENCHMARK TERBAIK (GOLD STANDARD)**:
-> Implementasi modul ERM baru paling presisi dan mulus: **PENGKAJIAN GERIATRI RAWAT JALAN (RM 13.8.1)** (`06.0003`).
+> - Implementasi ERM Rawat Jalan: **PENGKAJIAN GERIATRI RAWAT JALAN (RM 13.8.1)** (`06.0003`).
+> - Implementasi ERM Rawat Inap Jiwa Dual-Entry: **[ASESMEN RAWAT INAP JIWA (RM 13.1.1 - 13.1.4)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-jiwa-ranap.md)** (`asesmen-jiwa-ranap.md`).
 > - DDL & DML: [ddl_dat_pengkajian_geriatri_rajal.sql](file:///home/geri/ITM/SOEDOMO/simrs/database/ddl_dat_pengkajian_geriatri_rajal.sql)
 > - Model: [M_pelayanan.php](file:///home/geri/ITM/SOEDOMO/simrs/application/modules/pelayanan/models/M_pelayanan.php#L27140-L27356)
 > - Controller: [Pelayanan.php](file:///home/geri/ITM/SOEDOMO/simrs/application/modules/pelayanan/controllers/Pelayanan.php#L29680-L29775)

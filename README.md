@@ -28,3 +28,5 @@ Dalam membangun atau memodifikasi modul ERM, pengembang dan AI **WAJIB MEMAHAMI 
 6. **[Kaidah Modal Print & PDF Cetak](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)** (`list-cetak.md`)
 7. **[Panduan Solusi & Penanganan Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)** (`solve-eror.md`)
 8. **[Blueprint Standar E-Rekam Medis Khusus Form OP (IBS)](erm-form-op.md)** (`erm-form-op.md`) - *Dual-Integration Form OP & Global ERM, No btn-sm Button Rule*
+9. **[Panduan Asesmen Keperawatan Rawat Inap (RM 13.1)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-keperawatan-ranap.md)** (`asesmen-keperawatan-ranap.md`)
+10. **[Blueprint Asesmen Rawat Inap Jiwa (RM 13.1.1 - 13.1.4)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-jiwa-ranap.md)** (`asesmen-jiwa-ranap.md`)

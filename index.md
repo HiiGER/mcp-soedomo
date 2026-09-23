@@ -130,4 +130,5 @@ Pada sistem SIMRS RSUD Soedomo, parameter URL `n` (`?n=...`) merepresentasikan *
    - Alur kerja komprehensif, panduan maintenance, standar alur pembuatan, mapping database, serta helper auto-fill master pasien & diagnosa medis.
 10. **[Blueprint Standar E-Rekam Medis Khusus Form OP (IBS)](erm-form-op.md)** (`erm-form-op.md`)
     - Konsep Dual-Integration (Penunjang IBS & Global ERM), aturan mandatori button (no `btn-sm` untuk tambah data), standardisasi model `log_erm`, routing controller, view IBS, form modal multi-section, dan PDF cetak 3-kolom Dompdf.
-
+11. **[Blueprint Asesmen Rawat Inap Jiwa (RM 13.1.1 - 13.1.4)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-jiwa-ranap.md)** (`asesmen-jiwa-ranap.md`)
+    - Blueprint arsitektur dual-entry perawat & dokter DPJP, skema JSONB, partial views tab sub-halaman, dan cetak PDF Dompdf gabungan.

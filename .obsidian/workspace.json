@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "index.md",
+                "file": "list-cetak.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "list-cetak"
             }
           }
         ]
@@ -189,5 +189,11 @@
     }
   },
   "active": "b6311f2df77491c6",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "index.md",
+    "database-helper.md",
+    "grid-table.md",
+    "erm.md",
+    "database-style.md"
+  ]
 }
