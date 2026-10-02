@@ -8,25 +8,28 @@ Repositori ini berisi seluruh dokumentasi teknis, standar arsitektur, panduan ba
 
 Dalam membangun atau memodifikasi modul ERM, pengembang dan AI **WAJIB MEMAHAMI DAN MENGIKUTI TAHAPAN BERURUTAN**:
 
-1. **[Tahap 1: Database & Advisory Lock ID](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-style.md)**: Buat file query DDL PostgreSQL (8 kolom audit log wajib) + DML Registrasi `mst_erekam_medis`. (Eksekusi database dilakukan MANUAL oleh Developer, DILARANG auto-create table di Model/Controller).
-2. **[Tahap 2: Model & Status Log ERM](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)**: Buat DataTables Server-Side query `SELECT * FROM (...) a` & panggil `log_erm()` di method simpan.
-3. **[Tahap 3: Controller HMVC & Route Parameter Navigasi](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)**: Susun route Level 1 List Modal, Level 2 Form Modal, AJAX submit, & Print PDF (Wajib melampirkan parameter `?n=<?= _get('n') ?>`).
-4. **[Tahap 4: UI Level 1 List Modal](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)**: Mengacu paten `list_informed_consent_tonsilektomy_modal.php`.
-5. **[Tahap 5: UI Level 2 Form Modal & TTD](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)**: Mengacu paten `form_informed_consent_tonsilektomy_modal.php` + Efisiensi Single-Entry TTD `_modalTtd`.
-6. **[Tahap 6: PDF Cetak Dompdf](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)**: Mengacu paten `cetak_permintaan_pelayanan_kerohanian.php` + Kop Surat 3-Kolom Murni & Simetris (`height: 105px;`) + Mandatori TTD Barcode QR Code Pegawai `generate_ttd()`.
-7. **[Tahap 7: Audit Solusi Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)**: Konsultasi 13 poin inventarisasi error jika terjadi kendala runtime.
+1. **[Tahap 1: Database & Advisory Lock ID](database-style.md)**: Buat file query DDL PostgreSQL (8 kolom audit log wajib) + DML Registrasi `mst_erekam_medis`. (Eksekusi database dilakukan MANUAL oleh Developer, DILARANG auto-create table di Model/Controller).
+2. **[Tahap 2: Model & Status Log ERM](erm.md)**: Buat DataTables Server-Side query `SELECT * FROM (...) a` & panggil `log_erm()` di method simpan.
+3. **[Tahap 3: Controller HMVC & Route Parameter Navigasi](erm.md)**: Susun route Level 1 List Modal, Level 2 Form Modal, AJAX submit, & Print PDF (Wajib melampirkan parameter `?n=<?= _get('n') ?>`).
+4. **[Tahap 4: UI Level 1 List Modal](modal-style.md)**: Mengacu paten `list_informed_consent_tonsilektomy_modal.php`.
+5. **[Tahap 5: UI Level 2 Form Modal & TTD](modal-style.md)**: Mengacu paten `form_informed_consent_tonsilektomy_modal.php` + Efisiensi Single-Entry TTD `_modalTtd`.
+6. **[Tahap 6: PDF Cetak Dompdf](list-cetak.md)**: Mengacu paten `cetak_permintaan_pelayanan_kerohanian.php` + Kop Surat 3-Kolom Murni & Simetris (`height: 105px;`) + Mandatori TTD Barcode QR Code Pegawai `generate_ttd()`.
+7. **[Tahap 7: Audit Solusi Error](solve-eror.md)**: Konsultasi 13 poin inventarisasi error jika terjadi kendala runtime.
+8. **[Tahap 8: Quality Gate & Verifikasi System Analyst](sop-verifikasi-system-analyst.md)**: Standar verifikasi optimalisasi, efisiensi query, performa ringan, integritas data, dan checklist mandatori sebelum rilis.
 
 ---
 
 ## 📖 Daftar Isi Dokumentasi
 
-1. **[Index Utama Dokumentasi](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/index.md)** (`index.md`) - *Termasuk Kaidah Mandatori Parameter Navigasi (`?n=...`)*
-2. **[Kaidah Pembuatan Database](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-style.md)** (`database-style.md`)
-3. **[Referensi Fungsi DB Helper](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-helper.md)** (`database-helper.md`)
-4. **[Blueprint E-Rekam Medis (ERM)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)** (`erm.md`)
-5. **[Kaidah UI Modal Form](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)** (`modal-style.md`)
-6. **[Kaidah Modal Print & PDF Cetak](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)** (`list-cetak.md`)
-7. **[Panduan Solusi & Penanganan Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)** (`solve-eror.md`)
+1. **[Index Utama Dokumentasi](index.md)** (`index.md`) - *Termasuk Kaidah Mandatori Parameter Navigasi (`?n=...`)*
+2. **[Kaidah Pembuatan Database](database-style.md)** (`database-style.md`)
+3. **[Referensi Fungsi DB Helper](database-helper.md)** (`database-helper.md`)
+4. **[Blueprint E-Rekam Medis (ERM)](erm.md)** (`erm.md`)
+5. **[Kaidah UI Modal Form](modal-style.md)** (`modal-style.md`)
+6. **[Kaidah Modal Print & PDF Cetak](list-cetak.md)** (`list-cetak.md`)
+7. **[Panduan Solusi & Penanganan Error](solve-eror.md)** (`solve-eror.md`)
 8. **[Blueprint Standar E-Rekam Medis Khusus Form OP (IBS)](erm-form-op.md)** (`erm-form-op.md`) - *Dual-Integration Form OP & Global ERM, No btn-sm Button Rule*
-9. **[Panduan Asesmen Keperawatan Rawat Inap (RM 13.1)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-keperawatan-ranap.md)** (`asesmen-keperawatan-ranap.md`)
-10. **[Blueprint Asesmen Rawat Inap Jiwa (RM 13.1.1 - 13.1.4)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-jiwa-ranap.md)** (`asesmen-jiwa-ranap.md`)
+9. **[Panduan Asesmen Keperawatan Rawat Inap (RM 13.1)](asesmen-keperawatan-ranap.md)** (`asesmen-keperawatan-ranap.md`)
+10. **[Blueprint Asesmen Rawat Inap Jiwa (RM 13.1.1 - 13.1.4)](asesmen-jiwa-ranap.md)** (`asesmen-jiwa-ranap.md`)
+11. **[Standar Cetak Informed Consent](standar-cetak-informed-consent.md)** (`standar-cetak-informed-consent.md`) - *Standar Cetak Lembar Persetujuan/Penolakan Tindakan 3-Kolom, TTD Barcode QR Code PPA*
+12. **[SOP & Angket Verifikasi Kualitas System Analyst](sop-verifikasi-system-analyst.md)** (`sop-verifikasi-system-analyst.md`) - *Quality Gate Mandatori & Standard Evaluasi 5 Pilar Arsitektur*

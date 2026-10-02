@@ -77,6 +77,14 @@ Untuk memastikan konsistensi mutlak 100%, setiap pembuatan atau refactoring modu
 | 1. Uji AJAX Save, DataTables Redraw, & Status Indikator Hijau ERM.                |
 | 2. Konsultasi 12 Poin Solusi Error di solve-eror.md jika terjadi kendala.         |
 +-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| TAHAP 8: QUALITY GATE & VERIFIKASI SYSTEM ANALYST                                 |
+| [ sop-verifikasi-system-analyst.md ]                                              |
+| 1. Evaluasi 5 Pilar Kualitas: Efisiensi SQL (No N+1), JSONB, Memori, Clean Code.  |
+| 2. Verifikasi Angket Check-Sheet Mandatori sebelum rilis ("Definition of Done"). |
++-----------------------------------------------------------------------------------+
 ```
 
 ---
@@ -110,25 +118,29 @@ Pada sistem SIMRS RSUD Soedomo, parameter URL `n` (`?n=...`) merepresentasikan *
 
 ## 📚 Daftar Berkas Dokumentasi
 
-1. **[Kaidah Pembuatan Database](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-style.md)** (`database-style.md`)
+1. **[Kaidah Pembuatan Database](database-style.md)** (`database-style.md`)
    - Standar DDL, penamaan tabel, 8 kolom audit log mandatori, dan DML registrasi menu ERM.
-2. **[Referensi Fungsi DB Helper](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/database-helper.md)** (`database-helper.md`)
+2. **[Referensi Fungsi DB Helper](database-helper.md)** (`database-helper.md`)
    - `DB::get_id($table)` dengan PostgreSQL Transaction Advisory Lock, `DB::insert()`, `DB::update()`, dan subquery DataTables.
-3. **[Blueprint E-Rekam Medis (ERM)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/erm.md)** (`erm.md`)
+3. **[Blueprint E-Rekam Medis (ERM)](erm.md)** (`erm.md`)
    - Pintu akses ERM, integrasi `log_erm()` untuk warna status indikator hijau tebal.
-4. **[Kaidah UI Modal Form](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/modal-style.md)** (`modal-style.md`)
+4. **[Kaidah UI Modal Form](modal-style.md)** (`modal-style.md`)
    - Acuan paten `form_informed_consent_tonsilektomy_modal.php`, aturan multi-level modal (`_modal`), dan efisiensi TTD `_modalTtd`.
-5. **[Kaidah Modal Print & PDF Cetak](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/list-cetak.md)** (`list-cetak.md`)
+5. **[Kaidah Modal Print & PDF Cetak](list-cetak.md)** (`list-cetak.md`)
    - Acuan paten `cetak_informed_consent_tonsilektomy.php`, Kop Surat 3-Kolom Murni & Simetris (`height: 105px;`), dan styling Dompdf.
-6. **[Panduan Solusi & Penanganan Error](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/solve-eror.md)** (`solve-eror.md`)
+6. **[Panduan Solusi & Penanganan Error](solve-eror.md)** (`solve-eror.md`)
    - Inventarisasi 24 poin solusi penanganan error sistem.
-7. **[Panduan Pengerjaan ERM Mulus & Presisi](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/panduan-erm-mulus.md)** (`panduan-erm-mulus.md`)
+7. **[Panduan Pengerjaan ERM Mulus & Presisi](panduan-erm-mulus.md)** (`panduan-erm-mulus.md`)
    - Breakdown 7 langkah alur pengerjaan ERM terbukti mulus, kalkulasi JS real-time, auto-populate data klinis & DPJP, serta Kop Cetak 3-Kolom.
-8. **[Panduan Penggunaan GridTable Dinamis](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/grid-table.md)** (`grid-table.md`)
+8. **[Panduan Penggunaan GridTable Dinamis](grid-table.md)** (`grid-table.md`)
    - Kaidah pemetaan data array terurut, auto-fill dinamis dari pengkajian, penanganan unset POST array, dan rendering cetak Dompdf.
-9. **[Panduan Asesmen Keperawatan Rawat Inap (RM 13.1)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-keperawatan-ranap.md)** (`asesmen-keperawatan-ranap.md`)
+9. **[Panduan Asesmen Keperawatan Rawat Inap (RM 13.1)](asesmen-keperawatan-ranap.md)** (`asesmen-keperawatan-ranap.md`)
    - Alur kerja komprehensif, panduan maintenance, standar alur pembuatan, mapping database, serta helper auto-fill master pasien & diagnosa medis.
 10. **[Blueprint Standar E-Rekam Medis Khusus Form OP (IBS)](erm-form-op.md)** (`erm-form-op.md`)
     - Konsep Dual-Integration (Penunjang IBS & Global ERM), aturan mandatori button (no `btn-sm` untuk tambah data), standardisasi model `log_erm`, routing controller, view IBS, form modal multi-section, dan PDF cetak 3-kolom Dompdf.
-11. **[Blueprint Asesmen Rawat Inap Jiwa (RM 13.1.1 - 13.1.4)](file:///home/geri/ITM/SOEDOMO/dokumentasi-soedomo/asesmen-jiwa-ranap.md)** (`asesmen-jiwa-ranap.md`)
+11. **[Blueprint Asesmen Rawat Inap Jiwa (RM 13.1.1 - 13.1.4)](asesmen-jiwa-ranap.md)** (`asesmen-jiwa-ranap.md`)
     - Blueprint arsitektur dual-entry perawat & dokter DPJP, skema JSONB, partial views tab sub-halaman, dan cetak PDF Dompdf gabungan.
+12. **[Standar Cetak Informed Consent](standar-cetak-informed-consent.md)** (`standar-cetak-informed-consent.md`)
+    - Standar arsitektur lembar cetak persetujuan/penolakan tindakan, Kop 3-kolom, TTD Barcode QR Code PPA, checkbox base64, tanpa nomor berkas, dan checklist 10 batch progres refactoring 98 modul Informed Consent.
+13. **[SOP & Angket Verifikasi Kualitas System Analyst](sop-verifikasi-system-analyst.md)** (`sop-verifikasi-system-analyst.md`)
+    - Quality Gate Mandatori: Standard evaluasi 5 pilar (Optimalisasi SQL, Lightweight Performance, Data Integrity, Clean Code, & Ekosistem Soedomo) lengkap dengan angket check-sheet.
