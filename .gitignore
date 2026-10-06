@@ -1,5 +1,6 @@
 # Obsidian workspace settings
 .obsidian/
-.obsidian
-.obsidian/core-plugins.json
-.obsidian/workspace.json
+
+# MCP server dependencies
+mcp-server/node_modules/
+mcp-server/package-lock.json
