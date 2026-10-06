@@ -57,6 +57,30 @@ server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
   };
 });
 
+// ── Stage → dokumen mapping (sinkron dengan index.md) ───────────────────────
+
+const STAGE_MAP = {
+  "1": ["database-style.md", "database-helper.md"],
+  "2": ["database-helper.md", "erm.md"],
+  "3": ["erm.md", "list-cetak.md"],
+  "4": ["modal-style.md", "panduan-erm-mulus.md"],
+  "5": ["modal-style.md", "panduan-erm-mulus.md"],
+  "6": ["list-cetak.md", "panduan-erm-mulus.md"],
+  "7": ["solve-eror.md"],
+  "8": ["sop-verifikasi-system-analyst.md"],
+};
+
+const STAGE_LABELS = {
+  "1": "Database Schema & Audit Logs",
+  "2": "Model & DataTables Server-Side",
+  "3": "Controller HMVC",
+  "4": "UI Modal Level 1 - List History",
+  "5": "UI Modal Level 2 - Form Input",
+  "6": "Lembar Cetak PDF Dompdf",
+  "7": "Verifikasi & Handling Error",
+  "8": "Quality Gate & Verifikasi System Analyst",
+};
+
 // ── Tools ────────────────────────────────────────────────────────────────────
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -86,6 +110,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           file: { type: "string", description: "Nama file, contoh: database-style.md" },
         },
         required: ["file"],
+      },
+    },
+    {
+      name: "get_context",
+      description:
+        "Ambil semua dokumentasi relevan untuk tahap pengerjaan ERM tertentu (1-8). " +
+        "Gunakan ini sebelum mengerjakan modul agar konteks lengkap dan tepat sasaran. " +
+        "Tahap: 1=Database, 2=Model, 3=Controller, 4=UI List Modal, 5=UI Form Modal, 6=PDF Cetak, 7=Error Handling, 8=Quality Gate.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          stage: {
+            type: "string",
+            description: "Nomor tahap ERM (1-8)",
+            enum: ["1", "2", "3", "4", "5", "6", "7", "8"],
+          },
+        },
+        required: ["stage"],
       },
     },
   ],
@@ -130,6 +172,25 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       throw new Error(`Dokumen tidak ditemukan: ${file}`);
     }
     return { content: [{ type: "text", text: content }] };
+  }
+
+  if (name === "get_context") {
+    const stage = args?.stage;
+    if (!stage || !STAGE_MAP[stage]) throw new Error(`Stage tidak valid: ${stage}. Gunakan 1-8.`);
+    const files = STAGE_MAP[stage];
+    const label = STAGE_LABELS[stage];
+    const parts = [`# Konteks Tahap ${stage}: ${label}\n`];
+    for (const f of files) {
+      const path = join(DOCS_DIR, f);
+      let content;
+      try {
+        content = readFileSync(path, "utf-8");
+      } catch {
+        content = `_(file tidak ditemukan: ${f})_`;
+      }
+      parts.push(`\n---\n## 📄 ${f}\n\n${content}`);
+    }
+    return { content: [{ type: "text", text: parts.join("") }] };
   }
 
   throw new Error(`Tool tidak dikenal: ${name}`);
